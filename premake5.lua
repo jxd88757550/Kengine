@@ -1,9 +1,9 @@
 --premake5 script
-workspace("Kengin")
+workspace("Kengine")
 	configurations{"Debug","Release"}
 	platforms{"x64"}
 
-project("Kengin")
+project("Kengine")
    kind("ConsoleApp")
    language ("C++")
    targetdir ("%{prj.name}/bin/%{cfg.buildcfg}")
