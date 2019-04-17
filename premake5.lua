@@ -23,3 +23,6 @@ project("Kengine")
 	  architecture ("x64")
 	  
 	includedirs { "%{prj.name}/include" }
+	
+	filter("system:windows")
+		systemversion("latest")

