@@ -3,36 +3,25 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <stdio.h>
+
+class KeyLogger;
+extern KeyLogger Logger;
 
 #pragma once
 
-class KeyFrame {
-private:
-	std::vector<WORD> perframe;
-public:
-	VOID addKey(WORD vKey);
-
-	#ifdef DEBUG
-		VOID printFrame() const;
-	#endif
-};
-
-//assume each frame is 1ms
 class KeyLogger {
 private:
-	std::vector<KeyFrame*> keyframes;
-
-	VOID pushFrame();
+	std::vector<tagKBDLLHOOKSTRUCT> keyframes;
 public:
 	VOID record();
-	VOID recordFrames(size_t frames);
-	VOID stoprecord();
+	std::vector<tagKBDLLHOOKSTRUCT>& getKeyFrames();
 
 	#ifdef DEBUG
 	VOID printFrames() const;
 	#endif
-
-	~KeyLogger();
 };
+
+LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 
 VOID sendKey(WORD vkCode);

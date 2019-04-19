@@ -1,5 +1,8 @@
 #include "KeyLog.h"
 
+HHOOK keyboardHook;
+KeyLogger Logger;
+
 inline VOID sendKey(WORD vkCode) {
 	// This structure will be used to create the keyboard
 	// input event.
@@ -19,67 +22,46 @@ inline VOID sendKey(WORD vkCode) {
 	SendInput(1, &ip, sizeof(INPUT));
 }
 
-inline VOID KeyLogger::pushFrame()
+VOID KeyLogger::record()
 {
-	KeyFrame* frame = new KeyFrame();
+	keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, NULL, NULL);
+	std::cout << "Recording started" << '\n';
+	MSG msg{ 0 };
 
-	SHORT o;
-	for (WORD i = 0; i < 0xFF; ++i) {
-		o = GetAsyncKeyState(i);
-
-		if (o & 0x8000)
-			frame->addKey(i);
-	}
-
-	keyframes.emplace_back(frame);
+	while (GetMessage(&msg, NULL, 0, 0) != 0);
+	std::cout << "Unhooked...\n";
 }
 
-inline VOID KeyLogger::record()
+std::vector<tagKBDLLHOOKSTRUCT>& KeyLogger::getKeyFrames()
 {
-#ifdef DEBUG
-	std::cout << "Recording...\n";
-#endif
-	this->pushFrame();
-}
-
-VOID KeyLogger::recordFrames(size_t frames)
-{
-	for (size_t i = 0; i < frames; ++i) {
-		this->record();
-	}
-}
-
-inline VOID KeyLogger::stoprecord()
-{
-	return VOID();
+	return keyframes;
 }
 
 #ifdef DEBUG
 VOID KeyLogger::printFrames() const{
-	for (size_t i = 0; i < keyframes.size(); ++i) {
-		std::cout << "Frame: " << (i + 1) << '\n';
-		keyframes[i]->printFrame();
-		std::cout << '\n';
+	for (size_t i = 0; i < keyframes.size()-2; ++i) {
+		std::cout<<static_cast<char>(keyframes[i].vkCode);
 	}
+	std::cout << '\n';
 }
 #endif
 
-KeyLogger::~KeyLogger()
+LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-	for (KeyFrame* obj : keyframes)
-		delete obj;
-	keyframes.clear();
-}
+	PKBDLLHOOKSTRUCT key = (PKBDLLHOOKSTRUCT)lParam;
+	//a key was pressed
+	if (wParam == WM_KEYDOWN && nCode == HC_ACTION)
+	{
+		std::vector<tagKBDLLHOOKSTRUCT>& vec = Logger.getKeyFrames();
+		vec.push_back(*key);
 
-inline VOID KeyFrame::addKey(WORD vKey)
-{
-	perframe.emplace_back(vKey);
-}
+		std::cout << key->vkCode << '\n';
 
-#ifdef DEBUG
-inline VOID KeyFrame::printFrame() const{
-	for (size_t f = 0; f < perframe.size();++f) {
-		std::cout << "Hex code: " << std::hex << perframe[f] << '\n';
+		if (vec.size() > 1 && vec[vec.size() - 2].vkCode == VK_LCONTROL && vec[vec.size() - 1].vkCode == 'Q') {
+			std::cout << "Recording finished" << "\n\n";
+			PostQuitMessage(0);
+			return UnhookWindowsHookEx(keyboardHook);
+		}
 	}
+	return CallNextHookEx(keyboardHook, nCode, wParam, lParam);
 }
-#endif
