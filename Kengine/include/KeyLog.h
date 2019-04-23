@@ -17,6 +17,8 @@ public:
 	VOID record();
 	std::vector<tagKBDLLHOOKSTRUCT>& getKeyFrames();
 
+	VOID sendKeys();
+
 	#ifdef DEBUG
 	VOID printFrames() const;
 	#endif
