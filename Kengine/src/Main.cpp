@@ -4,7 +4,7 @@ int main()
 {
 	Logger.record();
 	Logger.printFrames();
-	Sleep(1000);
-	Logger.sendKeys();
+	Sleep(3000);
+	Sender.sendKeys();
 	return 0;
 }

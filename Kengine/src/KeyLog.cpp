@@ -3,23 +3,35 @@
 HHOOK keyboardHook;
 HHOOK mouseHook;
 KeyLogger Logger;
+KeySender Sender;
+DWORD initTime;
 
-VOID sendKey(WORD vkCode) {
-	INPUT ip;
-
-	// Set up a generic keyboard event.
-	ip.type = INPUT_KEYBOARD;
-
+VOID KeySender::keyDown(WORD vkCode) {
 	ip.ki.wVk = vkCode;
-	ip.ki.wScan = 0; // hardware scan code for key
 	ip.ki.dwFlags = 0;
-	ip.ki.time = 0;
-	ip.ki.dwExtraInfo = 0;
 
 	SendInput(1, &ip, sizeof(INPUT));
+}
 
+VOID KeySender::keyUp(WORD vkCode) {
+	ip.ki.wVk = vkCode;
 	ip.ki.dwFlags = KEYEVENTF_KEYUP;
+
 	SendInput(1, &ip, sizeof(INPUT));
+}
+
+VOID KeySender::sendKeys()
+{
+	std::vector<VKKEYINFO>& vec = Logger.getKeyFrames();
+
+	for (int i = 0; i < vec.size(); ++i) 
+	{
+		Sleep(vec[i].time);
+		if (vec[i].isDown)
+			this->keyDown(vec[i].vkCode);
+		else
+			this->keyUp(vec[i].vkCode);
+	}
 }
 
 VOID KeyLogger::record()
@@ -30,34 +42,20 @@ VOID KeyLogger::record()
 	std::cout << "Recording started" << '\n';
 	MSG msg{ 0 };
 
+	initTime = GetMessageTime();
+
 	while (GetMessage(&msg, NULL, 0, 0) != 0);
 	std::cout << "Unhooked...\n";
 }
 
-std::vector<tagKBDLLHOOKSTRUCT>& KeyLogger::getKeyFrames()
+std::vector<VKKEYINFO>& KeyLogger::getKeyFrames()
 {
 	return keyframes;
 }
 
-VOID KeyLogger::sendKeys()
+std::array<WORD, sizeof(WORD)> KeyLogger::getIndices()
 {
-	for (tagKBDLLHOOKSTRUCT i : keyframes) {
-		INPUT ip;
-
-		// Set up a generic keyboard event.
-		ip.type = INPUT_KEYBOARD;
-
-		ip.ki.wVk = i.vkCode;
-		ip.ki.wScan = 0; // hardware scan code for key
-		ip.ki.dwFlags = 0;
-		ip.ki.time = 0;
-		ip.ki.dwExtraInfo = 0;
-
-		SendInput(1, &ip, sizeof(INPUT));
-
-		ip.ki.dwFlags = KEYEVENTF_KEYUP;
-		SendInput(1, &ip, sizeof(INPUT));
-	}
+	return indices;
 }
 
 #ifdef DEBUG
@@ -79,26 +77,42 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 	}
 	//mouse events
 
-	if (wParam == WM_SYSKEYDOWN || wParam == WM_KEYDOWN && nCode == HC_ACTION)
+	if (wParam == WM_SYSKEYUP || wParam == WM_SYSKEYDOWN || wParam == WM_KEYUP || wParam == WM_KEYDOWN && nCode == HC_ACTION)
 	{
-		std::vector<tagKBDLLHOOKSTRUCT>& vec = Logger.getKeyFrames();
-		vec.push_back(*key);
+		std::vector<VKKEYINFO>& vec = Logger.getKeyFrames();
 
-		#ifdef DEBUG
-				std::cout << key->vkCode << '\n';
-		#endif
+		VKKEYINFO info;
+		info.vkCode = key->vkCode;
+		info.isDown = !(key->flags >> 7);
+		info.time = key->time-initTime;
+		std::cout << initTime << std::endl;
+		initTime = info.time;
 
-		if (vec.size() > 1 && vec[vec.size() - 2].vkCode == VK_LCONTROL && key->vkCode == 'Q') {
+		std::array<WORD, sizeof(WORD)> indices = Logger.getIndices();
+
+		if (indices.at(key->vkCode) != info.isDown) {
+			vec.push_back(info);
+			indices.at(key->vkCode) = info.isDown;
+		}
+		
+		if (vec.size() > 1 && vec[vec.size() - 2].vkCode == VK_LCONTROL && key->vkCode == 'Q' || key->vkCode == VK_ESCAPE) {
 			std::cout << "Recording finished" << "\n\n";
 			PostQuitMessage(0);
 			vec.pop_back();
 			vec.pop_back();
+
 			return UnhookWindowsHookEx(keyboardHook);
 		}
 	}
-	else if (wParam == WM_KEYUP && nCode == HC_ACTION) {
-		
-	}
-
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
+
+KeySender::KeySender()
+{
+	ip.type = INPUT_KEYBOARD;
+
+	ip.ki.wScan = 0;
+	ip.ki.dwFlags = 0;
+	ip.ki.time = 0;
+	ip.ki.dwExtraInfo = 0;
 }
