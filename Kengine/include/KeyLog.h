@@ -4,6 +4,9 @@
 #include <vector>
 #include <array>
 #include <stdio.h>
+#include <chrono>
+#include <ctime>    
+
 
 class KeyLogger;
 class KeySender;
@@ -32,11 +35,12 @@ struct VKKEYINFO {
 class KeyLogger {
 private:
 	std::vector<VKKEYINFO> keyframes;
-	std::array<WORD, sizeof(WORD)> indices;
+	std::array<bool, 255> indices;
 public:
+	KeyLogger();
 	VOID record();
 	std::vector<VKKEYINFO>& getKeyFrames();
-	std::array<WORD, sizeof(WORD)> getIndices();
+	std::array<bool, 255>& getIndices();
 
 	#ifdef DEBUG
 	VOID printFrames() const;

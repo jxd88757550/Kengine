@@ -3,8 +3,8 @@
 int main()
 {
 	Logger.record();
-	Logger.printFrames();
+	//Logger.printFrames();
 	Sleep(3000);
-	Sender.sendKeys();
+	//Sender.sendKeys();
 	return 0;
 }

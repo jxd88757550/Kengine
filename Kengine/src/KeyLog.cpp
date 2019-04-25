@@ -5,6 +5,7 @@ HHOOK mouseHook;
 KeyLogger Logger;
 KeySender Sender;
 DWORD initTime;
+DWORD firstTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
 VOID KeySender::keyDown(WORD vkCode) {
 	ip.ki.wVk = vkCode;
@@ -34,6 +35,11 @@ VOID KeySender::sendKeys()
 	}
 }
 
+KeyLogger::KeyLogger() : keyframes(), indices(std::array<bool,255>())
+{
+	//indices.fill(0)
+}
+
 VOID KeyLogger::record()
 {
 	std::cout << "Creating Hook" << '\n';
@@ -42,7 +48,11 @@ VOID KeyLogger::record()
 	std::cout << "Recording started" << '\n';
 	MSG msg{ 0 };
 
+	std::cout << sizeof(bool) << std::endl;
+
 	initTime = GetMessageTime();
+	auto start = std::chrono::system_clock::now();
+	std::cout <<"Init: " << std::chrono::system_clock::to_time_t(start) << std::endl;
 
 	while (GetMessage(&msg, NULL, 0, 0) != 0);
 	std::cout << "Unhooked...\n";
@@ -53,7 +63,7 @@ std::vector<VKKEYINFO>& KeyLogger::getKeyFrames()
 	return keyframes;
 }
 
-std::array<WORD, sizeof(WORD)> KeyLogger::getIndices()
+std::array<bool, 255>& KeyLogger::getIndices()
 {
 	return indices;
 }
@@ -81,18 +91,27 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 	{
 		std::vector<VKKEYINFO>& vec = Logger.getKeyFrames();
 
+		if (vec.size() == 0)
+		{
+			firstTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()) - firstTime;
+		}
+
 		VKKEYINFO info;
 		info.vkCode = key->vkCode;
 		info.isDown = !(key->flags >> 7);
-		info.time = key->time-initTime;
-		std::cout << initTime << std::endl;
-		initTime = info.time;
+		
+		info.time = key->time - initTime;
+		std::cout <<"Time: "<< info.time << std::endl;
+		initTime = key->time;
 
-		std::array<WORD, sizeof(WORD)> indices = Logger.getIndices();
+		std::cout << info.vkCode << std::endl;
+		std::array<bool, 255>& indices = Logger.getIndices();
 
-		if (indices.at(key->vkCode) != info.isDown) {
+		std::cout << indices.at((WORD)key->vkCode) << std::endl;
+
+		if (indices.at((WORD)key->vkCode) != info.isDown) {
 			vec.push_back(info);
-			indices.at(key->vkCode) = info.isDown;
+			indices.at((WORD)key->vkCode) = info.isDown;
 		}
 		
 		if (vec.size() > 1 && vec[vec.size() - 2].vkCode == VK_LCONTROL && key->vkCode == 'Q' || key->vkCode == VK_ESCAPE) {
@@ -100,7 +119,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			PostQuitMessage(0);
 			vec.pop_back();
 			vec.pop_back();
-
+			vec[0].time = firstTime;
 			return UnhookWindowsHookEx(keyboardHook);
 		}
 	}
