@@ -1,7 +1,7 @@
 #include "KeyLog.h"
 
 HHOOK keyboardHook;
-HHOOK mouseHook;
+//HHOOK mouseHook;
 KeyLogger Logger;
 KeySender Sender;
 DWORD initTime;
@@ -28,8 +28,8 @@ VOID KeySender::sendKeys()
 	std::vector<INPUT>& vec = Logger.getKeyFrames();
 
 //	SendInput(vec.size(), vec.data(), sizeof(INPUT));
-
-	for (int i = 0; i < vec.size(); ++i) {
+	//sendinput not sleeping properly...?
+	for (size_t i = 0; i < vec.size(); ++i) {
 		Sleep(vec[i].ki.time);
 		SendInput(1, &vec[i], sizeof(INPUT));
 	}
@@ -39,7 +39,9 @@ VOID KeyLogger::record()
 {
 	std::cout << "Creating Hook" << '\n';
 	keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, NULL, NULL);
-	mouseHook = SetWindowsHookEx(WH_MOUSE_LL, KeyboardProc, NULL, NULL);
+	//mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseProc, NULL, NULL);
+	//creating hooks cause lag
+
 	std::cout << "Recording started" << '\n';
 	MSG msg{ 0 };
 
@@ -69,13 +71,22 @@ VOID KeyLogger::printFrames() const{
 }
 #endif
 
+LRESULT CALLBACK mouseProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+
+}
+
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	PKBDLLHOOKSTRUCT key = (PKBDLLHOOKSTRUCT)lParam;
 	//a key was pressed
 
 	if (wParam == WM_LBUTTONDOWN && nCode == HC_ACTION) {
-		std::cout << "Left click\n";
+		std::vector<INPUT>& vec = Logger.getKeyFrames();
+
+		INPUT ip;
+		ip.type = INPUT_MOUSE;
+
 	}
 	//mouse events
 
@@ -94,9 +105,9 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		ip.ki.dwExtraInfo = 0;
 		ip.ki.wScan = 0;
 		ip.ki.wVk = key->vkCode;
-
+#ifdef DEBUG
 		std::cout << Logger.codes.at(ip.ki.wVk) << std::endl;
-
+#endif
 		if (key->flags & 0x1)
 			ip.ki.dwFlags = KEYEVENTF_EXTENDEDKEY;
 		else if(key->flags >> 7)

@@ -8,7 +8,7 @@ int main()
 	Sleep(5000);
 	
 	Sender.sendKeys();
-	Sender.sendKeys();
-	Sender.sendKeys();
+
+
 	return 0;
 }

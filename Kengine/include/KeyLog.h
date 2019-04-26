@@ -42,4 +42,5 @@ public:
 	#endif
 };
 
+LRESULT CALLBACK mouseProc(int nCode, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
