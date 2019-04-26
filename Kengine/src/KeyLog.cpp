@@ -1,7 +1,7 @@
 #include "KeyLog.h"
 
 HHOOK keyboardHook;
-//HHOOK mouseHook;
+HHOOK mouseHook;
 KeyLogger Logger;
 KeySender Sender;
 DWORD initTime;
@@ -27,14 +27,14 @@ VOID KeySender::sendKeys()
 	std::cout << "Playing keys...\n";
 	std::vector<INPUT>& vec = Logger.getKeyFrames();
 
-//	SendInput(vec.size(), vec.data(), sizeof(INPUT));
+	//SendInput(vec.size(), vec.data(), sizeof(INPUT));
 	//sendinput not sleeping properly...?
 	for (size_t i = 0; i < vec.size(); ++i) {
 		Sleep(vec[i].ki.time);
 		SendInput(1, &vec[i], sizeof(INPUT));
 	}
 }
-
+ 
 VOID KeyLogger::record()
 {
 	std::cout << "Creating Hook" << '\n';
