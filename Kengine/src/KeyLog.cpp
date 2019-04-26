@@ -27,11 +27,12 @@ VOID KeySender::sendKeys()
 	std::cout << "Playing keys...\n";
 	std::vector<INPUT>& vec = Logger.getKeyFrames();
 
-	//SendInput(vec.size(), vec.data(), sizeof(INPUT));
+//	SendInput(vec.size(), vec.data(), sizeof(INPUT));
 
-	INPUT i = vec[0];
-
-	SendInput(1, &i, sizeof(INPUT));
+	for (int i = 0; i < vec.size(); ++i) {
+		Sleep(vec[i].ki.time);
+		SendInput(1, &vec[i], sizeof(INPUT));
+	}
 }
 
 VOID KeyLogger::record()
@@ -41,8 +42,6 @@ VOID KeyLogger::record()
 	mouseHook = SetWindowsHookEx(WH_MOUSE_LL, KeyboardProc, NULL, NULL);
 	std::cout << "Recording started" << '\n';
 	MSG msg{ 0 };
-
-	std::cout << sizeof(bool) << std::endl;
 
 	while (GetMessage(&msg, NULL, 0, 0) != 0);
 	std::cout << "Unhooked...\n\n";
@@ -64,7 +63,7 @@ VOID KeyLogger::printFrames() const{
 		}
 		else if (keyframes[i].type == INPUT_KEYBOARD) {
 			std::cout << "Delay: " << keyframes[i].ki.time << '\n';
-			std::cout << keyframes[i].ki.wVk << " " << (keyframes[i].ki.dwFlags ? "KEYUP" : "KEYDOWN") << "\n\n";
+			std::cout << Logger.codes.at(keyframes[i].ki.wVk) << " " << (keyframes[i].ki.dwFlags== KEYEVENTF_KEYUP ? "KEYUP" : "KEYDOWN") << "\n\n";
 		}
 	}
 }
@@ -91,11 +90,12 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		INPUT ip;
 		ip.type = INPUT_KEYBOARD;
 		ip.ki.time = key->time - initTime;
-		ip.ki.time = 0;
 		initTime = key->time;
 		ip.ki.dwExtraInfo = 0;
 		ip.ki.wScan = 0;
 		ip.ki.wVk = key->vkCode;
+
+		std::cout << Logger.codes.at(ip.ki.wVk) << std::endl;
 
 		if (key->flags & 0x1)
 			ip.ki.dwFlags = KEYEVENTF_EXTENDEDKEY;
@@ -103,8 +103,6 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			ip.ki.dwFlags = KEYEVENTF_KEYUP;
 		else
 			ip.ki.dwFlags = 0x0000;
-
-		std::cout << "Time: " << ip.ki.time << std::endl;
 
 		vec.push_back(ip);
 		

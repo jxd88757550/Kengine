@@ -3,10 +3,10 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <string>
 #include <stdio.h>
 #include <chrono>
-#include <ctime>    
-
+#include <ctime>
 
 class KeyLogger;
 class KeySender;
@@ -30,6 +30,10 @@ class KeyLogger {
 private:
 	std::vector<INPUT> keyframes;
 public:
+	std::array<std::string, 255> codes=
+	{
+#include "VKCodes.h"	
+	};
 	VOID record();
 	std::vector<INPUT>& getKeyFrames();
 
