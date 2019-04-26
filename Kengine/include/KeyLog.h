@@ -26,21 +26,12 @@ public:
 	VOID sendKeys();
 };
 
-struct VKKEYINFO {
-	WORD vkCode;
-	bool isDown;
-	DWORD time;
-};
-
 class KeyLogger {
 private:
-	std::vector<VKKEYINFO> keyframes;
-	std::array<bool, 255> indices;
+	std::vector<INPUT> keyframes;
 public:
-	KeyLogger();
 	VOID record();
-	std::vector<VKKEYINFO>& getKeyFrames();
-	std::array<bool, 255>& getIndices();
+	std::vector<INPUT>& getKeyFrames();
 
 	#ifdef DEBUG
 	VOID printFrames() const;

@@ -5,7 +5,8 @@ HHOOK mouseHook;
 KeyLogger Logger;
 KeySender Sender;
 DWORD initTime;
-DWORD firstTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+DWORD firstTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
 VOID KeySender::keyDown(WORD vkCode) {
 	ip.ki.wVk = vkCode;
@@ -23,21 +24,14 @@ VOID KeySender::keyUp(WORD vkCode) {
 
 VOID KeySender::sendKeys()
 {
-	std::vector<VKKEYINFO>& vec = Logger.getKeyFrames();
+	std::cout << "Playing keys...\n";
+	std::vector<INPUT>& vec = Logger.getKeyFrames();
 
-	for (int i = 0; i < vec.size(); ++i) 
-	{
-		Sleep(vec[i].time);
-		if (vec[i].isDown)
-			this->keyDown(vec[i].vkCode);
-		else
-			this->keyUp(vec[i].vkCode);
-	}
-}
+	//SendInput(vec.size(), vec.data(), sizeof(INPUT));
 
-KeyLogger::KeyLogger() : keyframes(), indices(std::array<bool,255>())
-{
-	//indices.fill(0)
+	INPUT i = vec[0];
+
+	SendInput(1, &i, sizeof(INPUT));
 }
 
 VOID KeyLogger::record()
@@ -50,30 +44,29 @@ VOID KeyLogger::record()
 
 	std::cout << sizeof(bool) << std::endl;
 
-	initTime = GetMessageTime();
-	auto start = std::chrono::system_clock::now();
-	std::cout <<"Init: " << std::chrono::system_clock::to_time_t(start) << std::endl;
-
 	while (GetMessage(&msg, NULL, 0, 0) != 0);
-	std::cout << "Unhooked...\n";
+	std::cout << "Unhooked...\n\n";
 }
 
-std::vector<VKKEYINFO>& KeyLogger::getKeyFrames()
+std::vector<INPUT>& KeyLogger::getKeyFrames()
 {
 	return keyframes;
 }
 
-std::array<bool, 255>& KeyLogger::getIndices()
-{
-	return indices;
-}
-
 #ifdef DEBUG
 VOID KeyLogger::printFrames() const{
+	std::cout << "Printing keys...\n";
 	for (size_t i = 0; i < keyframes.size(); ++i) {
-		std::cout<<static_cast<char>(keyframes[i].vkCode);
+		if (keyframes[i].type == INPUT_MOUSE) {
+			std::cout << "Delay: " << keyframes[i].mi.time << '\n';
+			std::cout << "Dx: " << keyframes[i].mi.dx << '\n';
+			std::cout << "Dy: " << keyframes[i].mi.dy << '\n';
+		}
+		else if (keyframes[i].type == INPUT_KEYBOARD) {
+			std::cout << "Delay: " << keyframes[i].ki.time << '\n';
+			std::cout << keyframes[i].ki.wVk << " " << (keyframes[i].ki.dwFlags ? "KEYUP" : "KEYDOWN") << "\n\n";
+		}
 	}
-	std::cout << '\n';
 }
 #endif
 
@@ -89,37 +82,38 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 	if (wParam == WM_SYSKEYUP || wParam == WM_SYSKEYDOWN || wParam == WM_KEYUP || wParam == WM_KEYDOWN && nCode == HC_ACTION)
 	{
-		std::vector<VKKEYINFO>& vec = Logger.getKeyFrames();
+		std::vector<INPUT>& vec = Logger.getKeyFrames();
 
 		if (vec.size() == 0)
 		{
-			firstTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()) - firstTime;
+			firstTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - firstTime;
 		}
-
-		VKKEYINFO info;
-		info.vkCode = key->vkCode;
-		info.isDown = !(key->flags >> 7);
-		
-		info.time = key->time - initTime;
-		std::cout <<"Time: "<< info.time << std::endl;
+		INPUT ip;
+		ip.type = INPUT_KEYBOARD;
+		ip.ki.time = key->time - initTime;
+		ip.ki.time = 0;
 		initTime = key->time;
+		ip.ki.dwExtraInfo = 0;
+		ip.ki.wScan = 0;
+		ip.ki.wVk = key->vkCode;
 
-		std::cout << info.vkCode << std::endl;
-		std::array<bool, 255>& indices = Logger.getIndices();
+		if (key->flags & 0x1)
+			ip.ki.dwFlags = KEYEVENTF_EXTENDEDKEY;
+		else if(key->flags >> 7)
+			ip.ki.dwFlags = KEYEVENTF_KEYUP;
+		else
+			ip.ki.dwFlags = 0x0000;
 
-		std::cout << indices.at((WORD)key->vkCode) << std::endl;
+		std::cout << "Time: " << ip.ki.time << std::endl;
 
-		if (indices.at((WORD)key->vkCode) != info.isDown) {
-			vec.push_back(info);
-			indices.at((WORD)key->vkCode) = info.isDown;
-		}
+		vec.push_back(ip);
 		
-		if (vec.size() > 1 && vec[vec.size() - 2].vkCode == VK_LCONTROL && key->vkCode == 'Q' || key->vkCode == VK_ESCAPE) {
+		if (vec.size() > 1 && vec[vec.size() - 2].ki.wVk == VK_LCONTROL && key->vkCode == 'Q' || key->vkCode == VK_ESCAPE) {
 			std::cout << "Recording finished" << "\n\n";
 			PostQuitMessage(0);
 			vec.pop_back();
 			vec.pop_back();
-			vec[0].time = firstTime;
+			vec[0].ki.time = firstTime;
 			return UnhookWindowsHookEx(keyboardHook);
 		}
 	}
