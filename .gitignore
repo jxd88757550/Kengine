@@ -31,7 +31,6 @@
 *.app
 
 .vs/
-Kengine.sln
-Kengine.vcxproj*
+*.user
 Kengine/bin
 Kengine/binobj
