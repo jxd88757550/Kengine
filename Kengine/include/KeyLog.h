@@ -22,8 +22,9 @@ public:
 	KeySender();
 	VOID keyDown(WORD vkCode);
 	VOID keyUp(WORD vkCode);
+	VOID KeyTest(WORD vkCode);
 
-	VOID sendKeys();
+	VOID sendKeys();	
 };
 
 class KeyLogger {
