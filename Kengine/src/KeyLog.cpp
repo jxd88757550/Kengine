@@ -27,20 +27,25 @@ VOID KeySender::sendKeys()
 	std::cout << "Playing keys...\n";
 	std::vector<INPUT>& vec = Logger.getKeyFrames();
 
-	//SendInput(vec.size(), vec.data(), sizeof(INPUT));
-	//sendinput not sleeping properly...?
-	
 	for (size_t i = 0; i < vec.size(); ++i) {
+		DWORD time = 0;
+
 		if (vec[i].type == INPUT_MOUSE)
 		{
 			Sleep(vec[i].mi.time);
+			time = vec[i].mi.time;
+			vec[i].mi.time = 0;
+			SendInput(1, &vec[i], sizeof(INPUT));
+			vec[i].mi.time = time;
 		}
 		else if (vec[i].type == INPUT_KEYBOARD)
 		{
 			Sleep(vec[i].ki.time);
+			time = vec[i].ki.time;
+			vec[i].ki.time = 0;
+			SendInput(1, &vec[i], sizeof(INPUT));
+			vec[i].ki.time = time;
 		}
-			
-		SendInput(1, &vec[i], sizeof(INPUT));
 	}
 }
 //function only works when outer applications aren't running at administer level rights
@@ -71,8 +76,8 @@ VOID KeyLogger::printFrames() const{
 	for (size_t i = 0; i < keyframes.size(); ++i) {
 		if (keyframes[i].type == INPUT_MOUSE) {
 			std::cout << "Delay: " << keyframes[i].mi.time << '\n';
-			std::cout << "Dx: " << keyframes[i].mi.dx << '\n';
-			std::cout << "Dy: " << keyframes[i].mi.dy << '\n';
+			std::cout << "Y: " << keyframes[i].mi.dy / (0xFFFF / GetSystemMetrics(SM_CXSCREEN)) << '\n';
+			std::cout << "X: " << keyframes[i].mi.dx / (0xFFFF / GetSystemMetrics(SM_CYSCREEN)) << '\n';
 		}
 		else if (keyframes[i].type == INPUT_KEYBOARD) {
 			std::cout << "Delay: " << keyframes[i].ki.time << '\n';
@@ -81,9 +86,6 @@ VOID KeyLogger::printFrames() const{
 	}
 }
 #endif
-
-const unsigned SCREEN_WIDTH = 1920;
-const unsigned SCREEN_HEIGHT = 1080;
 
 LRESULT CALLBACK mouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
@@ -99,20 +101,21 @@ LRESULT CALLBACK mouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 			std::cout<<"FirstTime: " << firstTime << std::endl;
 		}
 		INPUT ip;
+		ZeroMemory(&ip, sizeof(ip));
+
 		ip.type = INPUT_MOUSE;
 
-		ip.mi.dx = mouse->pt.x  * (0xFFFF / SCREEN_WIDTH);
-		ip.mi.dy = mouse->pt.y * (0xFFFF / SCREEN_HEIGHT);
+		ip.mi.dx = mouse->pt.x * (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
+		ip.mi.dy = mouse->pt.y * (0xFFFF / GetSystemMetrics(SM_CYSCREEN));
+		
 		ip.mi.time = mouse->time - initTime;
 		initTime = mouse->time;
 
-		//ip.mi.time = 0;
-		ip.mi.mouseData = 0;
-		ip.mi.dwExtraInfo = 0;
-
-		ip.mi.dwFlags = 0;
+		ip.mi.mouseData = (mouse->mouseData >> 16);
+		ip.mi.dwExtraInfo = mouse->dwExtraInfo;
+		ip.mi.dwFlags = MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE;
 		//these flags will be set later in the switch statement
-
+		
 		switch (wParam) {
 			case WM_LBUTTONDOWN:
 				printf_s("LEFT CLICK DOWN\n");
@@ -123,8 +126,16 @@ LRESULT CALLBACK mouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 				ip.mi.dwFlags |= MOUSEEVENTF_LEFTUP;
 				break;
 			case WM_MOUSEMOVE:
-				printf_s("MOUSE MOVED\n");
-				ip.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE;
+				//printf_s("MOUSE MOVED\n");
+				ip.mi.dwFlags |= MOUSEEVENTF_MOVE;
+				break;
+			case WM_MBUTTONDOWN:
+				//printf_s("MOUSE MOVED\n");
+				ip.mi.dwFlags |= MOUSEEVENTF_MIDDLEDOWN;
+				break;
+			case WM_MBUTTONUP:
+				//printf_s("MOUSE MOVED\n");
+				ip.mi.dwFlags |= MOUSEEVENTF_MIDDLEUP;
 				break;
 			case WM_MOUSEWHEEL:
 				printf_s("VERTICAL WHEEL CHANGE\n");
@@ -142,12 +153,18 @@ LRESULT CALLBACK mouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 				printf_s("RIGHT CLICK UP\n");
 				ip.mi.dwFlags |= MOUSEEVENTF_RIGHTUP;
 				break;
+			case WM_XBUTTONDOWN:
+				printf_s("XBUTTON DOWN\n");
+				ip.mi.dwFlags |= MOUSEEVENTF_XDOWN;
+				break;
+			case WM_XBUTTONUP:
+				printf_s("XBUTTON UP\n");
+				ip.mi.dwFlags |= MOUSEEVENTF_XUP;
+				break;
 		}
 		vec.push_back(ip);
 	}
 	//mouse events
-
-
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
@@ -165,6 +182,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			firstTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - firstTime;
 		}
 		INPUT ip;
+		ZeroMemory(&ip, sizeof(ip));
 		ip.type = INPUT_KEYBOARD;
 		ip.ki.time = key->time - initTime;
 		initTime = key->time;
@@ -201,6 +219,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 KeySender::KeySender()
 {
+	ZeroMemory(&ip, sizeof(ip));
 	ip.type = INPUT_KEYBOARD;
 
 	ip.ki.wScan = 0;
