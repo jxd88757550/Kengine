@@ -32,9 +32,14 @@ VOID KeySender::sendKeys()
 	
 	for (size_t i = 0; i < vec.size(); ++i) {
 		if (vec[i].type == INPUT_MOUSE)
+		{
 			Sleep(vec[i].mi.time);
-		else if (vec[i].type == INPUT_KEYBOARD) 
+		}
+		else if (vec[i].type == INPUT_KEYBOARD)
+		{
 			Sleep(vec[i].ki.time);
+		}
+			
 		SendInput(1, &vec[i], sizeof(INPUT));
 	}
 }
@@ -77,63 +82,82 @@ VOID KeyLogger::printFrames() const{
 }
 #endif
 
+const unsigned SCREEN_WIDTH = 1920;
+const unsigned SCREEN_HEIGHT = 1080;
+
 LRESULT CALLBACK mouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-	if (nCode != HC_ACTION)
-		return CallNextHookEx(NULL, nCode, wParam, lParam);
+	if (nCode == HC_ACTION) {
+		MSLLHOOKSTRUCT * mouse = (MSLLHOOKSTRUCT *)lParam;
+		//mouse event
 
-	MSLLHOOKSTRUCT * mouse = (MSLLHOOKSTRUCT *)lParam;
-	//mouse event
-
-	INPUT ip;
-	ip.type = INPUT_MOUSE;
-
-	if (nCode == NULL) {
 		std::vector<INPUT>& vec = Logger.getKeyFrames();
 
 		if (vec.size() == 0)
 		{
 			firstTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - firstTime;
+			std::cout<<"FirstTime: " << firstTime << std::endl;
 		}
+		INPUT ip;
+		ip.type = INPUT_MOUSE;
 
-		ip.mi.dx = mouse->pt.x;
-		ip.mi.dy = mouse->pt.y;
-		ip.mi.mouseData = mouse->mouseData;
+		ip.mi.dx = mouse->pt.x  * (0xFFFF / SCREEN_WIDTH);
+		ip.mi.dy = mouse->pt.y * (0xFFFF / SCREEN_HEIGHT);
 		ip.mi.time = mouse->time - initTime;
 		initTime = mouse->time;
-		ip.mi.dwExtraInfo = mouse->dwExtraInfo;
+
+		//ip.mi.time = 0;
+		ip.mi.mouseData = 0;
+		ip.mi.dwExtraInfo = 0;
+
 		ip.mi.dwFlags = 0;
+		//these flags will be set later in the switch statement
 
-		vec.push_back(ip);
-		/*
 		switch (wParam) {
-			case WM_LBUTTONDBLCLK:
-
-				break;
-			case WM_LBUTTONUP: 
-				printf_s("LEFT CLICK UP\n");
-			break;
-			case WM_LBUTTONDOWN: 
+			case WM_LBUTTONDOWN:
 				printf_s("LEFT CLICK DOWN\n");
-			break;
+				ip.mi.dwFlags |= MOUSEEVENTF_LEFTDOWN;
+				break;
+			case WM_LBUTTONUP:
+				printf_s("LEFT CLICK UP\n");
+				ip.mi.dwFlags |= MOUSEEVENTF_LEFTUP;
+				break;
+			case WM_MOUSEMOVE:
+				printf_s("MOUSE MOVED\n");
+				ip.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE;
+				break;
+			case WM_MOUSEWHEEL:
+				printf_s("VERTICAL WHEEL CHANGE\n");
+				ip.mi.dwFlags |= MOUSEEVENTF_WHEEL;
+				break;
+			case WM_MOUSEHWHEEL:
+				printf_s("HORIZONTAL WHEEL CHANGE\n");
+				ip.mi.dwFlags |= MOUSEEVENTF_HWHEEL;
+				break;
+			case WM_RBUTTONDOWN:
+				printf_s("RIGHT CLICK DOWN\n");
+				ip.mi.dwFlags |= MOUSEEVENTF_RIGHTDOWN;
+				break;
+			case WM_RBUTTONUP:
+				printf_s("RIGHT CLICK UP\n");
+				ip.mi.dwFlags |= MOUSEEVENTF_RIGHTUP;
+				break;
 		}
-		*/
+		vec.push_back(ip);
 	}
 	//mouse events
+
 
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-	if (nCode != HC_ACTION)
-		return CallNextHookEx(NULL, nCode, wParam, lParam);
-
-	PKBDLLHOOKSTRUCT key = (PKBDLLHOOKSTRUCT)lParam;
-	//a key was pressed
-
 	if (wParam == WM_SYSKEYUP || wParam == WM_SYSKEYDOWN || wParam == WM_KEYUP || wParam == WM_KEYDOWN && nCode == HC_ACTION)
 	{
+		PKBDLLHOOKSTRUCT key = (PKBDLLHOOKSTRUCT)lParam;
+		//a key was pressed
+
 		std::vector<INPUT>& vec = Logger.getKeyFrames();
 
 		if (vec.size() == 0)   
@@ -164,9 +188,12 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			PostQuitMessage(0);
 			vec.pop_back();
 			vec.pop_back();
-			vec[0].ki.time = firstTime;
-			return UnhookWindowsHookEx(keyboardHook);
-			return UnhookWindowsHookEx(mouseHook);
+			if (vec[0].type == INPUT_MOUSE)
+				vec[0].mi.time = firstTime;
+			else if (vec[0].type == INPUT_KEYBOARD)
+				vec[0].ki.time = firstTime;
+
+			return UnhookWindowsHookEx(mouseHook) | UnhookWindowsHookEx(keyboardHook);
 		}
 	}
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
