@@ -56,7 +56,7 @@ VOID KeyLogger::record()
 	std::cout << "Creating Hook" << '\n';
 	keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, NULL, NULL);
 	mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseProc, NULL, NULL);
-	//creating hooks cause lag
+	//creating hooks can cause lag
 
 	std::cout << "Recording started" << '\n';
 	MSG msg{ 0 };
@@ -76,6 +76,47 @@ VOID KeyLogger::printFrames() const{
 	for (size_t i = 0; i < keyframes.size(); ++i) {
 		if (keyframes[i].type == INPUT_MOUSE) {
 			std::cout << "Delay: " << keyframes[i].mi.time << '\n';
+
+			DWORD flags = keyframes[i].mi.dwFlags;
+			flags &= ~(MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE);
+
+			switch (flags)
+			{
+			case MOUSEEVENTF_LEFTDOWN:
+				printf_s("LEFT CLICK DOWN\n");
+				break;
+			case MOUSEEVENTF_LEFTUP:
+				printf_s("LEFT CLICK UP\n");
+				break;
+			case MOUSEEVENTF_MOVE:
+				printf_s("MOUSE MOVED\n");
+				break;
+			case MOUSEEVENTF_MIDDLEDOWN:
+				printf_s("MIDDLE BUTTON DOWN\n");
+				break;
+			case MOUSEEVENTF_MIDDLEUP:
+				printf_s("MIDDLE BUTTON UP\n");
+				break;
+			case MOUSEEVENTF_WHEEL:
+				printf_s("VERTICAL WHEEL CHANGE\n");
+				break;
+			case MOUSEEVENTF_HWHEEL:
+				printf_s("HORIZONTAL WHEEL CHANGE\n");
+				//horizontal wheel not working atm
+				break;
+			case MOUSEEVENTF_RIGHTDOWN:
+				printf_s("RIGHT CLICK DOWN\n");
+				break;
+			case MOUSEEVENTF_RIGHTUP:
+				printf_s("RIGHT CLICK UP\n");
+				break;
+			case MOUSEEVENTF_XDOWN:
+				printf_s("XBUTTON DOWN\n");
+				break;
+			case MOUSEEVENTF_XUP:
+				printf_s("XBUTTON UP\n");
+				break;
+			}
 			std::cout << "Y: " << keyframes[i].mi.dy / (0xFFFF / GetSystemMetrics(SM_CXSCREEN)) << '\n';
 			std::cout << "X: " << keyframes[i].mi.dx / (0xFFFF / GetSystemMetrics(SM_CYSCREEN)) << '\n';
 		}
@@ -112,53 +153,47 @@ LRESULT CALLBACK mouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 		initTime = mouse->time;
 
 		ip.mi.mouseData = (mouse->mouseData >> 16);
-		ip.mi.dwExtraInfo = mouse->dwExtraInfo;
+		ip.mi.dwExtraInfo = 0;
 		ip.mi.dwFlags = MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE;
 		//these flags will be set later in the switch statement
-		
+
 		switch (wParam) {
 			case WM_LBUTTONDOWN:
-				printf_s("LEFT CLICK DOWN\n");
 				ip.mi.dwFlags |= MOUSEEVENTF_LEFTDOWN;
 				break;
 			case WM_LBUTTONUP:
-				printf_s("LEFT CLICK UP\n");
 				ip.mi.dwFlags |= MOUSEEVENTF_LEFTUP;
 				break;
 			case WM_MOUSEMOVE:
-				//printf_s("MOUSE MOVED\n");
 				ip.mi.dwFlags |= MOUSEEVENTF_MOVE;
 				break;
 			case WM_MBUTTONDOWN:
-				//printf_s("MOUSE MOVED\n");
 				ip.mi.dwFlags |= MOUSEEVENTF_MIDDLEDOWN;
 				break;
 			case WM_MBUTTONUP:
-				//printf_s("MOUSE MOVED\n");
 				ip.mi.dwFlags |= MOUSEEVENTF_MIDDLEUP;
 				break;
 			case WM_MOUSEWHEEL:
-				printf_s("VERTICAL WHEEL CHANGE\n");
 				ip.mi.dwFlags |= MOUSEEVENTF_WHEEL;
+
+				if (ip.mi.mouseData != WHEEL_DELTA)
+					ip.mi.mouseData |= 0xFFFF0000;
+				//makes sure that scrolling down works properly
 				break;
 			case WM_MOUSEHWHEEL:
-				printf_s("HORIZONTAL WHEEL CHANGE\n");
+				//callback function not calling for horizontal wheel for some reason
 				ip.mi.dwFlags |= MOUSEEVENTF_HWHEEL;
 				break;
 			case WM_RBUTTONDOWN:
-				printf_s("RIGHT CLICK DOWN\n");
 				ip.mi.dwFlags |= MOUSEEVENTF_RIGHTDOWN;
 				break;
 			case WM_RBUTTONUP:
-				printf_s("RIGHT CLICK UP\n");
 				ip.mi.dwFlags |= MOUSEEVENTF_RIGHTUP;
 				break;
 			case WM_XBUTTONDOWN:
-				printf_s("XBUTTON DOWN\n");
 				ip.mi.dwFlags |= MOUSEEVENTF_XDOWN;
 				break;
 			case WM_XBUTTONUP:
-				printf_s("XBUTTON UP\n");
 				ip.mi.dwFlags |= MOUSEEVENTF_XUP;
 				break;
 		}
@@ -177,7 +212,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 		std::vector<INPUT>& vec = Logger.getKeyFrames();
 
-		if (vec.size() == 0)   
+		if (vec.size() == 0)
 		{
 			firstTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - firstTime;
 		}
@@ -200,8 +235,9 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 			ip.ki.dwFlags |= KEYEVENTF_KEYUP;
 		
 		vec.push_back(ip);
-		
-		if (vec.size() > 1 && vec[vec.size() - 2].ki.wVk == VK_LCONTROL && key->vkCode == 'Q' || key->vkCode == VK_ESCAPE) {
+
+		if (vec.size() > 1 && (vec[vec.size() - 2].ki.wVk == VK_LCONTROL && key->vkCode == 'Q')) 
+		{
 			std::cout << "Recording finished" << "\n\n";
 			PostQuitMessage(0);
 			vec.pop_back();

@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <chrono>
 #include <ctime>
+#include <bitset>
 
 class KeyLogger;
 class KeySender;
@@ -22,7 +23,6 @@ public:
 	KeySender();
 	VOID keyDown(WORD vkCode);
 	VOID keyUp(WORD vkCode);
-	VOID KeyTest(WORD vkCode);
 
 	VOID sendKeys();	
 };

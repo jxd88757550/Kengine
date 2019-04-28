@@ -2,6 +2,7 @@
 
 int main()
 {
+	//Sleep(5000);
 	Logger.record();
 	Logger.printFrames();
 
