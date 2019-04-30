@@ -3,13 +3,15 @@
 int main()
 {
 	//Sleep(5000);
-	Logger.record();
-	Logger.printFrames();
+	//Logger.record();
+	//Logger.printFrames();
 
 	//Sleep(5000);
 	
-	File.saveMacro();
+	//File.saveMacroData();
 
+	File.readMacroData();
+	Logger.printFrames();
 //	Sender.sendKeys();
 
 
