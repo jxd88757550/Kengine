@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="include">
@@ -9,9 +9,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Kengine\include\File.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="Kengine\include\KeyLog.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -23,9 +20,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Kengine\src\File.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="Kengine\src\KeyLog.cpp">
       <Filter>src</Filter>
     </ClCompile>

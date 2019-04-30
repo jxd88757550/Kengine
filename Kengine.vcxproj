@@ -87,13 +87,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Kengine\include\File.h" />
     <ClInclude Include="Kengine\include\KeyLog.h" />
     <ClInclude Include="Kengine\include\VKCodes.h" />
     <ClInclude Include="Kengine\include\print.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Kengine\src\File.cpp" />
     <ClCompile Include="Kengine\src\KeyLog.cpp" />
     <ClCompile Include="Kengine\src\Main.cpp" />
   </ItemGroup>
