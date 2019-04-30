@@ -9,6 +9,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Kengine\include\File.h">
+      <Filter>include</Filter>
+    </ClInclude>
     <ClInclude Include="Kengine\include\KeyLog.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -20,6 +23,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Kengine\src\File.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="Kengine\src\KeyLog.cpp">
       <Filter>src</Filter>
     </ClCompile>

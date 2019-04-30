@@ -10,7 +10,7 @@ DWORD firstTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chr
 
 VOID KeySender::keyDown(WORD vkCode) {
 	ip.ki.wVk = vkCode;
-	ip.ki.dwFlags = 0;
+	ip.ki.dwFlags = KEYEVENTF_EXTENDEDKEY;
 
 	SendInput(1, &ip, sizeof(INPUT));
 }
@@ -55,7 +55,7 @@ VOID KeyLogger::record()
 {
 	std::cout << "Creating Hook" << '\n';
 	keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, NULL, NULL);
-	mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseProc, NULL, NULL);
+	//mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseProc, NULL, NULL);
 	//creating hooks can cause lag
 
 	std::cout << "Recording started" << '\n';
