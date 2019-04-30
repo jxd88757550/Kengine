@@ -1,4 +1,4 @@
-#include "KeyLog.h"
+#include "File.h"
 
 int main()
 {
@@ -6,9 +6,12 @@ int main()
 	Logger.record();
 	Logger.printFrames();
 
-	Sleep(5000);
+	//Sleep(5000);
 	
-	Sender.sendKeys();
+	File.saveMacro();
+
+//	Sender.sendKeys();
+
 
 	return 0;
 }

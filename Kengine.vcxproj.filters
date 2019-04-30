@@ -18,6 +18,7 @@
     <ClInclude Include="Kengine\include\print.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="Kengine\include\File.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Kengine\src\KeyLog.cpp">
@@ -26,5 +27,6 @@
     <ClCompile Include="Kengine\src\Main.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Kengine\src\File.cpp" />
   </ItemGroup>
 </Project>
