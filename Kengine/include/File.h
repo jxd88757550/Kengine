@@ -10,6 +10,8 @@ class MacroFile {
 private:
 
 public:
-	void saveMacroData();
-	void readMacroData();
+	void saveMacroData(const std::string& path);
+	void readMacroData(const std::string& path);
+
+	void saveMacroCalls(const std::string& path);
 };

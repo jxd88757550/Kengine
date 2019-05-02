@@ -2,42 +2,42 @@
 
 MacroFile File;
 
-void MacroFile::saveMacroData()
+void MacroFile::saveMacroData(const std::string& path)
 {
 	std::vector<INPUT>& vec = Logger.getKeyFrames();
 
-	std::ofstream macro;
-	macro.open("Kengine\\res\\Test2.txt");
+	std::ofstream data;
+	data.open(path);
 
-	macro << vec.size() <<'\n';
+	data << vec.size() <<'\n';
 
 	for (size_t i = 0; i < vec.size(); ++i)
 	{
 		if (vec[i].type == INPUT_MOUSE)
 		{
-			macro << INPUT_MOUSE << '\n';
-			macro << vec[i].mi.time <<'\n';
-			macro << vec[i].mi.dx << " " << vec[i].mi.dy << '\n';
-			macro << vec[i].mi.dwFlags << '\n';
-			macro << vec[i].mi.mouseData << '\n';
+			data << INPUT_MOUSE << '\n';
+			data << vec[i].mi.time <<'\n';
+			data << vec[i].mi.dx << " " << vec[i].mi.dy << '\n';
+			data << vec[i].mi.dwFlags << '\n';
+			data << vec[i].mi.mouseData << '\n';
 		}
 		else if (vec[i].type == INPUT_KEYBOARD)
 		{
-			macro << INPUT_KEYBOARD << '\n';
-			macro << vec[i].ki.time << '\n';
-			macro << vec[i].ki.wVk << ' ' << vec[i].ki.dwFlags << '\n';
+			data << INPUT_KEYBOARD << '\n';
+			data << vec[i].ki.time << '\n';
+			data << vec[i].ki.wVk << ' ' << vec[i].ki.dwFlags << '\n';
 		}
 	}
 
-	macro.close();
+	data.close();
 }
 
-void MacroFile::readMacroData()
+void MacroFile::readMacroData(const std::string& path)
 {
 	std::vector<INPUT>& vec = Logger.getKeyFrames();
 
 	std::ifstream data;
-	data.open("Kengine\\res\\Test2.txt");
+	data.open(path);
 	
 	size_t vecsize;
 
@@ -56,5 +56,92 @@ void MacroFile::readMacroData()
 		}
 	}
 
+	data.close();
+}
+
+void MacroFile::saveMacroCalls(const std::string & path)
+{
+	std::vector<INPUT>& vec = Logger.getKeyFrames();
+
+	std::ofstream data;
+	std::cout << path;
+	data.open(path);
+
+	if (!data.is_open()) {
+		std::cout << "Failed file\n";
+		return;
+	}
+
+	data << "void run() {\n";
+
+	for (size_t i = 0; i < vec.size(); ++i) {
+		if (vec[i].type == INPUT_MOUSE)
+		{
+			data << "Sleep(" << vec[i].mi.time << ");\n";
+			data << "Sender.mouseEvent(MouseCoord(ABSOLUTE, " << 
+				vec[i].mi.dx / (0xFFFF / GetSystemMetrics(SM_CXSCREEN)) << ", " << 
+				vec[i].mi.dy / (0xFFFF / GetSystemMetrics(SM_CYSCREEN)) << "), MouseEvent::";
+
+			DWORD flags = vec[i].mi.dwFlags;
+			flags &= ~(MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE);
+
+			switch (flags)
+			{
+			case MOUSEEVENTF_LEFTDOWN:
+				data << "LEFT_DOWN";
+				break;
+			case MOUSEEVENTF_LEFTUP:
+				data << "LEFT_UP";
+				break;
+			case MOUSEEVENTF_MOVE:
+				data << "MOVE";
+				break;
+			case MOUSEEVENTF_MIDDLEDOWN:
+				data << "MIDDLE_DOWN";
+				break;
+			case MOUSEEVENTF_MIDDLEUP:
+				data << "MIDDLE_UP";
+				break;
+			case MOUSEEVENTF_WHEEL:
+				if (vec[i].mi.mouseData < 0)
+					data << "WHEEL_DOWN";
+				else
+					data << "WHEEL_UP";
+				break;
+			case MOUSEEVENTF_HWHEEL:
+				if (vec[i].mi.mouseData < 0)
+					data << "HWHEEL_RIGHT";
+				else
+					data << "HWHEEL_LEFT";
+				//horizontal wheel not working atm
+				break;
+			case MOUSEEVENTF_RIGHTDOWN:
+				data << "RIGHT_DOWN";
+				break;
+			case MOUSEEVENTF_RIGHTUP:
+				data << "RIGHT_UP";
+				break;
+			case MOUSEEVENTF_XDOWN:
+				if (vec[i].mi.mouseData & XBUTTON1)
+					data << "X1_DOWN";
+				else
+					data << "X2_DOWN";
+				break;
+			case MOUSEEVENTF_XUP:
+				if (vec[i].mi.mouseData & XBUTTON1)
+					data << "X1_UP";
+				else
+					data << "X2_UP";
+				break;
+			}
+			data << ");\n";
+		}
+		else if (vec[i].type == INPUT_KEYBOARD)
+		{
+			data << "Sleep(" << vec[i].ki.time << ");\n";
+			data << "keyEvent(" << vec[i].ki.wVk << ", " << ((vec[i].ki.dwFlags & KEYEVENTF_KEYUP )? "true" : "false") << ");\n";
+		}
+	}
+	data << "}\n";
 	data.close();
 }

@@ -31,7 +31,6 @@ struct MouseCoord {
 	MouseCoord(char type=0, LONG x=0, LONG y=0);
 };
 
-
 enum MouseEvent : WORD
 {
 	MOVE,

