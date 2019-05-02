@@ -3,26 +3,120 @@
 HHOOK keyboardHook;
 HHOOK mouseHook;
 KeyLogger Logger;
-KeySender Sender;
+EventSender Sender;
 DWORD initTime;
 
 DWORD firstTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
-VOID KeySender::keyDown(WORD vkCode) {
-	ip.ki.wVk = vkCode;
-	ip.ki.dwFlags = 0;
-
-	SendInput(1, &ip, sizeof(INPUT));
+MouseCoord actualCoords(const MouseCoord& screen) {
+	MouseCoord coord;
+	coord.x = screen.x * (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
+	coord.y = screen.y * (0xFFFF / GetSystemMetrics(SM_CYSCREEN));
+	return coord;
 }
 
-VOID KeySender::keyUp(WORD vkCode) {
-	ip.ki.wVk = vkCode;
-	ip.ki.dwFlags = KEYEVENTF_KEYUP;
-
-	SendInput(1, &ip, sizeof(INPUT));
+MouseCoord screenCoords(const MouseCoord& actual) {
+	MouseCoord coord;
+	coord.x = actual.x / (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
+	coord.y = actual.y / (0xFFFF / GetSystemMetrics(SM_CYSCREEN));
+	return coord;
 }
 
-VOID KeySender::sendKeys()
+VOID EventSender::keyEvent(WORD vkCode, bool isUp) {
+	INPUT ki;
+	ZeroMemory(&ki, sizeof(ki));
+
+	ki.type = INPUT_KEYBOARD;
+	ki.ki.wVk = vkCode;
+
+	ki.ki.dwFlags = KEYEVENTF_EXTENDEDKEY;
+
+	if(isUp)
+	ki.ki.dwFlags |= KEYEVENTF_KEYUP;
+
+	SendInput(1, &ki, sizeof(INPUT));
+}
+
+#define OFFSET 3
+
+VOID EventSender::mouseEvent(const MouseCoord& coords, enum MouseEvent e)
+{
+	INPUT mi;
+	ZeroMemory(&mi, sizeof(mi));
+
+	mi.type = INPUT_MOUSE;
+	mi.mi.dwFlags |= MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE;
+
+	if (coords.type == ABSOLUTE)
+	{
+		mi.mi.dx = coords.x * (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
+		mi.mi.dy = coords.y * (0xFFFF / GetSystemMetrics(SM_CYSCREEN));
+	}else if (coords.type == RELATIVE)
+	{
+		POINT p;
+		GetCursorPos(&p);
+
+		mi.mi.dx = (p.x + coords.x) * (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
+		mi.mi.dy = (p.y + coords.y) * (0xFFFF / GetSystemMetrics(SM_CYSCREEN));
+	}
+	else if (coords.type == OFFSET)
+	{
+		//LPRECT rect;
+		//ZeroMemory(&rect, sizeof(rect));
+		//
+		//BOOL windowrect = GetWindowRect(GetForegroundWindow(), rect);
+		//
+		//mi.mi.dx = (rect->top + coords.x) * (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
+		//mi.mi.dy = (rect->left + coords. (0xFFFF / GetSystemMetrics(SM_CYSCREEN));y) *
+	}
+
+	if (coords.type != IGNORE) {
+		mi.mi.dwFlags |= MOUSEEVENTF_MOVE;
+	}
+
+	switch (e) {
+		case MOVE: mi.mi.dwFlags |= MOUSEEVENTF_MOVE;break;
+		case HWHEEL_RIGHT:mi.mi.dwFlags |= MOUSEEVENTF_HWHEEL;
+			mi.mi.mouseData = -WHEEL_DELTA;
+			break;
+		case HWHEEL_LEFT:mi.mi.dwFlags |= MOUSEEVENTF_HWHEEL;
+			mi.mi.mouseData = WHEEL_DELTA;
+			break;
+		case WHEEL_DOWN:mi.mi.dwFlags |= MOUSEEVENTF_WHEEL;
+			mi.mi.mouseData = -WHEEL_DELTA;
+			break;
+		case WHEEL_UP:mi.mi.dwFlags |= MOUSEEVENTF_WHEEL;
+			mi.mi.mouseData = WHEEL_DELTA;
+			break;
+		case LEFT_CLICK: mi.mi.dwFlags |= MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP; break;
+		case LEFT_DOWN:mi.mi.dwFlags |= MOUSEEVENTF_LEFTDOWN; break;
+		case LEFT_UP:mi.mi.dwFlags |= MOUSEEVENTF_LEFTUP; break;
+		case RIGHT_CLICK: mi.mi.dwFlags |= MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP; break;
+		case RIGHT_DOWN:mi.mi.dwFlags |= MOUSEEVENTF_RIGHTDOWN; break;
+		case RIGHT_UP:mi.mi.dwFlags |= MOUSEEVENTF_RIGHTUP; break;
+		case MIDDLE_CLICK:mi.mi.dwFlags |= MOUSEEVENTF_MIDDLEUP | MOUSEEVENTF_MIDDLEDOWN; break;
+		case MIDDLE_DOWN:mi.mi.dwFlags |= MOUSEEVENTF_MIDDLEDOWN; break;
+		case MIDDLE_UP:mi.mi.dwFlags |= MOUSEEVENTF_MIDDLEUP; break;
+		case X1_DOWN:mi.mi.dwFlags |= MOUSEEVENTF_XDOWN;
+			mi.mi.mouseData |= XBUTTON1;
+			break;
+		case X1_UP:mi.mi.dwFlags |= MOUSEEVENTF_XUP;
+			mi.mi.mouseData |= XBUTTON1;
+			break;
+		case X2_DOWN:mi.mi.dwFlags |= MOUSEEVENTF_XDOWN;
+			mi.mi.mouseData |= XBUTTON2;
+			break;
+		case X2_UP:mi.mi.dwFlags |= MOUSEEVENTF_XUP;
+			mi.mi.mouseData |= XBUTTON2;
+			break;
+	}
+	//x1 is backward
+	//x2 is forward
+
+	SendInput(1, &mi, sizeof(INPUT));
+}
+
+VOID EventSender::sendKeys()
 {
 	std::cout << "Playing keys...\n";
 	std::vector<INPUT>& vec = Logger.getKeyFrames();
@@ -253,13 +347,6 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
-KeySender::KeySender()
+MouseCoord::MouseCoord(char type, LONG x, LONG y) : type(type), x(x), y(y)
 {
-	ZeroMemory(&ip, sizeof(ip));
-	ip.type = INPUT_KEYBOARD;
-
-	ip.ki.wScan = 0;
-	ip.ki.dwFlags = 0;
-	ip.ki.time = 0;
-	ip.ki.dwExtraInfo = 0;
 }
