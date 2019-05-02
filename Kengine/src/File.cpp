@@ -139,9 +139,19 @@ void MacroFile::saveMacroCalls(const std::string & path)
 		else if (vec[i].type == INPUT_KEYBOARD)
 		{
 			data << "Sleep(" << vec[i].ki.time << ");\n";
-			data << "keyEvent(" << vec[i].ki.wVk << ", " << ((vec[i].ki.dwFlags & KEYEVENTF_KEYUP )? "true" : "false") << ");\n";
+			data << "Sender.keyEvent(" << vec[i].ki.wVk << ", " << ((vec[i].ki.dwFlags & KEYEVENTF_KEYUP)? "true" : "false") << ");\n";
 		}
 	}
 	data << "}\n";
+	data.close();
+}
+
+void MacroFile::print(const std::string& path)
+{
+	std::ifstream data;
+	data.open(path);
+
+
+
 	data.close();
 }

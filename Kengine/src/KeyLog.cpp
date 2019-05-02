@@ -25,6 +25,8 @@ VOID EventSender::keyEvent(WORD vkCode, bool isUp) {
 
 #define OFFSET 3
 
+
+
 VOID EventSender::mouseEvent(const MouseCoord& coords, enum MouseEvent e)
 {
 	INPUT mi;

@@ -14,4 +14,5 @@ public:
 	void readMacroData(const std::string& path);
 
 	void saveMacroCalls(const std::string& path);
+	void print(const std::string& path);
 };

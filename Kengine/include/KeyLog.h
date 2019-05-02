@@ -73,6 +73,8 @@ public:
 	{
 #include "VKCodes.h"	
 	};
+	std::pair<int, std::string> d;
+	
 	VOID record();
 	std::vector<INPUT>& getKeyFrames();
 
