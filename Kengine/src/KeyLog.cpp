@@ -8,20 +8,6 @@ DWORD initTime;
 
 DWORD firstTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
-MouseCoord actualCoords(const MouseCoord& screen) {
-	MouseCoord coord;
-	coord.x = screen.x * (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
-	coord.y = screen.y * (0xFFFF / GetSystemMetrics(SM_CYSCREEN));
-	return coord;
-}
-
-MouseCoord screenCoords(const MouseCoord& actual) {
-	MouseCoord coord;
-	coord.x = actual.x / (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
-	coord.y = actual.y / (0xFFFF / GetSystemMetrics(SM_CYSCREEN));
-	return coord;
-}
-
 VOID EventSender::keyEvent(WORD vkCode, bool isUp) {
 	INPUT ki;
 	ZeroMemory(&ki, sizeof(ki));
@@ -149,7 +135,7 @@ VOID KeyLogger::record()
 {
 	std::cout << "Creating Hook" << '\n';
 	keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, NULL, NULL);
-	mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseProc, NULL, NULL);
+	//mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseProc, NULL, NULL);
 	//creating hooks can cause lag
 
 	std::cout << "Recording started" << '\n';

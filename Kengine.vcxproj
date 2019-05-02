@@ -15,7 +15,7 @@
     <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Kengine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -87,11 +87,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Kengine\include\File.h" />
     <ClInclude Include="Kengine\include\KeyLog.h" />
     <ClInclude Include="Kengine\include\VKCodes.h" />
     <ClInclude Include="Kengine\include\print.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Kengine\src\File.cpp" />
     <ClCompile Include="Kengine\src\KeyLog.cpp" />
     <ClCompile Include="Kengine\src\Main.cpp" />
   </ItemGroup>
