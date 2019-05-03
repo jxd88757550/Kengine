@@ -159,7 +159,6 @@ enum KeyEvent : WORD
 	NUMPAD_7 = 0x67,
 	NUMPAD_8 = 0x68,
 	NUMPAD_9 = 0x69,
-
 };
 
 class EventSender {

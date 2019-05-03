@@ -2,62 +2,111 @@
 
 MacroFile File;
 
-void MacroFile::saveMacroData(const std::string& path)
-{
-	std::vector<INPUT>& vec = Logger.getKeyFrames();
-
-	std::ofstream data;
-	data.open(path);
-
-	data << vec.size() <<'\n';
-
-	for (size_t i = 0; i < vec.size(); ++i)
-	{
-		if (vec[i].type == INPUT_MOUSE)
-		{
-			data << INPUT_MOUSE << '\n';
-			data << vec[i].mi.time <<'\n';
-			data << vec[i].mi.dx << " " << vec[i].mi.dy << '\n';
-			data << vec[i].mi.dwFlags << '\n';
-			data << vec[i].mi.mouseData << '\n';
-		}
-		else if (vec[i].type == INPUT_KEYBOARD)
-		{
-			data << INPUT_KEYBOARD << '\n';
-			data << vec[i].ki.time << '\n';
-			data << vec[i].ki.wVk << ' ' << vec[i].ki.dwFlags << '\n';
-		}
-	}
-
-	data.close();
-}
-
-void MacroFile::readMacroData(const std::string& path)
-{
-	std::vector<INPUT>& vec = Logger.getKeyFrames();
-
-	std::ifstream data;
-	data.open(path);
-	
-	size_t vecsize;
-
-	data >> vecsize;
-	vec.resize(vecsize);
-
-	for (size_t i = 0; i < vec.size(); ++i) {
-		ZeroMemory(&vec[i], sizeof(vec[i]));
-
-		data >> vec[i].type;
-		if (vec[i].type == INPUT_KEYBOARD) {
-			data >> vec[i].ki.time >> vec[i].ki.wVk >> vec[i].ki.dwFlags;
-		}
-		else if (vec[i].type == INPUT_MOUSE) {
-			data >> vec[i].mi.time >> vec[i].mi.dx >> vec[i].mi.dy >> vec[i].mi.dwFlags >> vec[i].mi.mouseData;
-		}
-	}
-
-	data.close();
-}
+const std::map<WORD, std::string> keystr_mapping = {
+	{ 0x1B,"ESCAPE" },
+	{ 0x70,"F1" },
+	{ 0x71,"F2" },
+	{ 0x72,"F3" },
+	{ 0x73,"F4" },
+	{ 0x74,"F5" },
+	{ 0x75,"F6" },
+	{ 0x76,"F7" },
+	{ 0x77,"F8" },
+	{ 0x78,"F9" },
+	{ 0x79,"F10" },
+	{ 0x7A,"F11" },
+	{ 0x7B,"F12" },
+	{ 0x2C,"PRINT" },
+	{ 0x91,"SCROLL" },
+	{ 0x13,"PAUSE" },
+	{ 0xC0,"BACKQUOTE" },
+	{ 0x30,"NUM_0" },
+	{ 0x31,"NUM_1" },
+	{ 0x32,"NUM_2" },
+	{ 0x33,"NUM_3" },
+	{ 0x34,"NUM_4" },
+	{ 0x35,"NUM_5" },
+	{ 0x36,"NUM_6" },
+	{ 0x37,"NUM_7" },
+	{ 0x38,"NUM_8" },
+	{ 0x39,"NUM_9" },
+	{ 0xBD,"MINUS" },
+	{ 0xBB,"PLUS" },
+	{ 0x08,"BACK" },
+	{ 0x2D,"INSERT" },
+	{ 0x24,"HOME" },
+	{ 0X21,"PGUP" },
+	{ 0X09,"TAB" },
+	{ 0x41,"KEY_A" },
+	{ 0x42,"KEY_B" },
+	{ 0x43,"KEY_C" },
+	{ 0x44,"KEY_D" },
+	{ 0x45,"KEY_E" },
+	{ 0x46,"KEY_F" },
+	{ 0x47,"KEY_G" },
+	{ 0x48,"KEY_H" },
+	{ 0x49,"KEY_I" },
+	{ 0x4a,"KEY_J" },
+	{ 0x4b,"KEY_K" },
+	{ 0x4c,"KEY_L" },
+	{ 0x4d,"KEY_M" },
+	{ 0x4e,"KEY_N" },
+	{ 0x4f,"KEY_O" },
+	{ 0x50,"KEY_P" },
+	{ 0x51,"KEY_Q" },
+	{ 0x52,"KEY_R" },
+	{ 0x53,"KEY_S" },
+	{ 0x54,"KEY_T" },
+	{ 0x55,"KEY_U" },
+	{ 0x56,"KEY_V" },
+	{ 0x57,"KEY_W" },
+	{ 0x58,"KEY_X" },
+	{ 0x59,"KEY_Y" },
+	{ 0x5a,"KEY_Z" },
+	{ 0xDB,"LEFTBRACE" },
+	{ 0xDD,"RIGHTBRACE" },
+	{ 0xDC,"BACKSLASH" },
+	{ 0x2E,"DEL" },
+	{ 0x23,"END" },
+	{ 0x22,"PGDN" },
+	{ 0x14,"CAPSLOCK" },
+	{ 0xBA,"SEMICOLON" },
+	{ 0xDE,"SINGLEQUOTE" },
+	{ 0XD0,"ENTER" },
+	{ 0xA0,"LEFTSHIFT" },
+	{ 0xBC,"COMMA" },
+	{ 0xBE,"PERIOD" },
+	{ 0xBF,"FORWARDSLASH" },
+	{ 0xA1,"RIGHTSHIFT" },
+	{ 0x26,"UPARROW" },
+	{ 0xA2,"LEFTCTRL" },
+	{ 0x5B,"WINDOWS" },
+	{ 0xA4,"LEFTALT" },
+	{ 0x20,"SPACE" },
+	{ 0x5D,"MENU" },
+	{ 0xA3,"RIGHTCTRL" },
+	{ 0x25,"LEFTARROW" },
+	{ 0x28,"DOWNARROW" },
+	{ 0x27,"RIGHTARROW" },
+	{ 0X90,"NUMLOCK" },
+	{ 0X6F,"NUMPAD_DIVIDE" },
+	{ 0X6A,"NUMPAD_MULTIPLY" },
+	{ 0X6B,"NUMPAD_SUBTRACT" },
+	{ 0x6B,"NUMPAD_ADD" },
+	{ 0xD0,"NUMPAD_ENTER" },
+	{ 0x60,"NUMPAD_INSERT" },
+	{ 0x6E,"NUMPAD_DELETE" },
+	{ 0X60,"NUMPAD_0" },
+	{ 0x61,"NUMPAD_1" },
+	{ 0x62,"NUMPAD_2" },
+	{ 0x63,"NUMPAD_3" },
+	{ 0x64,"NUMPAD_4" },
+	{ 0x65,"NUMPAD_5" },
+	{ 0x66,"NUMPAD_6" },
+	{ 0x67,"NUMPAD_7" },
+	{ 0x68,"NUMPAD_8" },
+	{ 0x69,"NUMPAD_9" },
+};
 
 void MacroFile::saveMacroCalls(const std::string & path)
 {
@@ -141,7 +190,13 @@ void MacroFile::saveMacroCalls(const std::string & path)
 		{
 			if(vec[i].ki.time != 0)
 			data << "Sleep(" << vec[i].ki.time << ");\n";
-			data << "Sender.keyEvent(" << vec[i].ki.wVk << ", " << ((vec[i].ki.dwFlags & KEYEVENTF_KEYUP)? "true" : "false") << ");\n";
+
+			auto itr = keystr_mapping.find(vec[i].ki.wVk);
+
+			if(itr == keystr_mapping.end())
+				data << "Sender.keyEvent(" << vec[i].ki.wVk << ", " << ((vec[i].ki.dwFlags & KEYEVENTF_KEYUP) ? "true" : "false") << ");\n";
+			else
+				data << "Sender.keyEvent(" << keystr_mapping.at(vec[i].ki.wVk) << ", " << ((vec[i].ki.dwFlags & KEYEVENTF_KEYUP)? "true" : "false") << ");\n";
 		}
 	}
 	data << "}\n";

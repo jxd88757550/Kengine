@@ -1,6 +1,7 @@
 #include <fstream>
 
 #include "KeyLog.h"
+#include <map>
 #pragma once
 
 class MacroFile;
@@ -10,8 +11,5 @@ class MacroFile {
 private:
 
 public:
-	void saveMacroData(const std::string& path);
-	void readMacroData(const std::string& path);
-
 	void saveMacroCalls(const std::string& path);
 };

@@ -18,9 +18,6 @@
     <ClInclude Include="Kengine\include\VKCodes.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Kengine\include\print.h">
-      <Filter>include</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Kengine\src\File.cpp">
