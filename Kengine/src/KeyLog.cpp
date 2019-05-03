@@ -51,7 +51,7 @@ VOID EventSender::mouseEvent(const MouseCoord& coords, enum MouseEvent e)
 		//BOOL windowrect = GetWindowRect(GetForegroundWindow(), rect);
 		//
 		//mi.mi.dx = (rect->top + coords.x) * (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
-		//mi.mi.dy = (rect->left + coords. (0xFFFF / GetSystemMetrics(SM_CYSCREEN));y) *
+		//mi.mi.dy = (rect->left + coords.y) * (0xFFFF / GetSystemMetrics(SM_CYSCREEN)));
 	}
 
 	if (coords.type != MOUSE_IGNORE) {
