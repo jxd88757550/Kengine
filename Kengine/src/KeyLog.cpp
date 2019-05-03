@@ -23,10 +23,6 @@ VOID EventSender::keyEvent(WORD vkCode, bool isUp) {
 	SendInput(1, &ki, sizeof(INPUT));
 }
 
-#define OFFSET 3
-
-
-
 VOID EventSender::mouseEvent(const MouseCoord& coords, enum MouseEvent e)
 {
 	INPUT mi;
@@ -35,7 +31,7 @@ VOID EventSender::mouseEvent(const MouseCoord& coords, enum MouseEvent e)
 	mi.type = INPUT_MOUSE;
 	mi.mi.dwFlags |= MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE;
 
-	if (coords.type == ABSOLUTE)
+	if (coords.type == MOUSE_ABSOLUTE)
 	{
 		mi.mi.dx = coords.x * (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
 		mi.mi.dy = coords.y * (0xFFFF / GetSystemMetrics(SM_CYSCREEN));
@@ -47,7 +43,7 @@ VOID EventSender::mouseEvent(const MouseCoord& coords, enum MouseEvent e)
 		mi.mi.dx = (p.x + coords.x) * (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
 		mi.mi.dy = (p.y + coords.y) * (0xFFFF / GetSystemMetrics(SM_CYSCREEN));
 	}
-	else if (coords.type == OFFSET)
+	else if (coords.type == MOUSE_OFFSET)
 	{
 		//LPRECT rect;
 		//ZeroMemory(&rect, sizeof(rect));
@@ -58,7 +54,7 @@ VOID EventSender::mouseEvent(const MouseCoord& coords, enum MouseEvent e)
 		//mi.mi.dy = (rect->left + coords. (0xFFFF / GetSystemMetrics(SM_CYSCREEN));y) *
 	}
 
-	if (coords.type != IGNORE) {
+	if (coords.type != MOUSE_IGNORE) {
 		mi.mi.dwFlags |= MOUSEEVENTF_MOVE;
 	}
 
@@ -235,7 +231,6 @@ LRESULT CALLBACK mouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 		initTime = mouse->time;
 
 		ip.mi.mouseData = (mouse->mouseData >> 16);
-		ip.mi.dwExtraInfo = 0;
 		ip.mi.dwFlags = MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE;
 		//these flags will be set later in the switch statement
 
@@ -335,6 +330,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
-MouseCoord::MouseCoord(char type, LONG x, LONG y) : type(type), x(x), y(y)
+MouseCoord::MouseCoord(TYPE type, LONG x, LONG y) : type(type), x(x), y(y)
 {
+
 }

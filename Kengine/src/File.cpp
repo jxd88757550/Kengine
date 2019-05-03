@@ -77,8 +77,9 @@ void MacroFile::saveMacroCalls(const std::string & path)
 	for (size_t i = 0; i < vec.size(); ++i) {
 		if (vec[i].type == INPUT_MOUSE)
 		{
+			if (vec[i].mi.time != 0)
 			data << "Sleep(" << vec[i].mi.time << ");\n";
-			data << "Sender.mouseEvent(MouseCoord(ABSOLUTE, " << 
+			data << "Sender.mouseEvent(MouseCoord(MOUSE_ABSOLUTE, " << 
 				vec[i].mi.dx / (0xFFFF / GetSystemMetrics(SM_CXSCREEN)) << ", " << 
 				vec[i].mi.dy / (0xFFFF / GetSystemMetrics(SM_CYSCREEN)) << "), MouseEvent::";
 
@@ -138,20 +139,11 @@ void MacroFile::saveMacroCalls(const std::string & path)
 		}
 		else if (vec[i].type == INPUT_KEYBOARD)
 		{
+			if(vec[i].ki.time != 0)
 			data << "Sleep(" << vec[i].ki.time << ");\n";
 			data << "Sender.keyEvent(" << vec[i].ki.wVk << ", " << ((vec[i].ki.dwFlags & KEYEVENTF_KEYUP)? "true" : "false") << ");\n";
 		}
 	}
 	data << "}\n";
-	data.close();
-}
-
-void MacroFile::print(const std::string& path)
-{
-	std::ifstream data;
-	data.open(path);
-
-
-
 	data.close();
 }

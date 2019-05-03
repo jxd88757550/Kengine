@@ -16,19 +16,19 @@ extern EventSender Sender;
 
 #pragma once
 
+enum TYPE : WORD {
+	MOUSE_IGNORE,
+	MOUSE_ABSOLUTE,
+	MOUSE_OFFSET,
+	MOUSE_RELATIVE
+};
+
 struct MouseCoord {
 	LONG x;
 	LONG y;
-	char type;
+	TYPE type;
 
-	enum TYPE : unsigned int {
-		//ABSOLUTE,
-		//RELATIVE,
-		//IGNORE,
-		OFFSET
-	};
-
-	MouseCoord(char type=0, LONG x=0, LONG y=0);
+	MouseCoord(TYPE type=MOUSE_IGNORE, LONG x=0, LONG y=0);
 };
 
 enum MouseEvent : WORD
