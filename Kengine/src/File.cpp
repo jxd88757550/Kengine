@@ -81,7 +81,7 @@ void MacroFile::saveMacroCalls(const std::string & path)
 			data << "Sleep(" << vec[i].mi.time << ");\n";
 			data << "Sender.mouseEvent(MouseCoord(MOUSE_ABSOLUTE, " << 
 				vec[i].mi.dx / (0xFFFF / GetSystemMetrics(SM_CXSCREEN)) << ", " << 
-				vec[i].mi.dy / (0xFFFF / GetSystemMetrics(SM_CYSCREEN)) << "), MouseEvent::";
+				vec[i].mi.dy / (0xFFFF / GetSystemMetrics(SM_CYSCREEN)) << "), ";
 
 			DWORD flags = vec[i].mi.dwFlags;
 			flags &= ~(MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE);

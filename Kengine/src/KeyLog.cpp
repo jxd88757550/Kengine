@@ -303,6 +303,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		ip.ki.wVk = key->vkCode;
 #ifdef DEBUG
 		std::cout << Logger.codes.at(ip.ki.wVk) << std::endl;
+		std::cout << "0x" <<std::hex << ip.ki.wVk << std::endl;
 #endif
 		ip.ki.dwFlags = 0x0000;
 
