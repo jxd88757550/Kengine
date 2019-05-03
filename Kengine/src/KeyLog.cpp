@@ -35,7 +35,7 @@ VOID EventSender::mouseEvent(const MouseCoord& coords, enum MouseEvent e)
 	{
 		mi.mi.dx = coords.x * (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
 		mi.mi.dy = coords.y * (0xFFFF / GetSystemMetrics(SM_CYSCREEN));
-	}else if (coords.type == RELATIVE)
+	}else if (coords.type == MOUSE_RELATIVE)
 	{
 		POINT p;
 		GetCursorPos(&p);
