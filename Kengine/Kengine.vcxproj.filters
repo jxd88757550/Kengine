@@ -9,24 +9,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Kengine\include\File.h">
+    <ClInclude Include="include\File.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Kengine\include\KeyLog.h">
+    <ClInclude Include="include\KeyLog.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Kengine\include\VKCodes.h">
+    <ClInclude Include="include\VKCodes.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Kengine\src\File.cpp">
+    <ClCompile Include="src\File.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Kengine\src\KeyLog.cpp">
+    <ClCompile Include="src\KeyLog.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Kengine\src\Main.cpp">
+    <ClCompile Include="src\Main.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

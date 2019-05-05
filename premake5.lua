@@ -4,7 +4,8 @@ workspace("Kengine")
 	platforms{"x64"}
 
 project("Kengine")
-   kind("StaticLib")
+   kind("ConsoleApp")
+   location("Kengine")
    language ("C++")
    targetdir ("%{prj.name}/bin/%{cfg.buildcfg}")
    objdir ("%{prj.name}/binobj/%{cfg.buildcfg}")
@@ -18,7 +19,7 @@ project("Kengine")
    filter("configurations:Release")
       defines { "RELEASE" }
       optimize ("On")
-	  
+	
 	filter ("platforms:x64")
 	  architecture ("x64")
 	  
@@ -26,10 +27,12 @@ project("Kengine")
 	
 	filter("system:windows")
 		systemversion("latest")
+		
 		filter ({})
-				
+
 project("Gui")
    kind("ConsoleApp")
+   location("Gui")
    language ("C++")
    targetdir ("%{prj.name}/bin/%{cfg.buildcfg}")
    objdir ("%{prj.name}/binobj/%{cfg.buildcfg}")

@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Gui", "Gui.vcxproj", "{6AF0870B-D6F9-877C-5F75-9E7CCB7D937C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Gui", "Gui\Gui.vcxproj", "{6AF0870B-D6F9-877C-5F75-9E7CCB7D937C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Kengine", "Kengine.vcxproj", "{2641A984-9220-2820-9B38-B3F607978E81}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Kengine", "Kengine\Kengine.vcxproj", "{2641A984-9220-2820-9B38-B3F607978E81}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
