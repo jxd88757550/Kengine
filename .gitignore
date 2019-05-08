@@ -33,7 +33,5 @@
 
 .vs/
 *.user
-Kengine/bin
-Kengine/bin
-Gui/bin
-Gui/binobj
+**/bin
+**/binobj
