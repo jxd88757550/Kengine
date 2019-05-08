@@ -33,5 +33,6 @@
 
 .vs/
 *.user
-**/bin
-**/binobj
+
+/**/Debug/*
+/**/Release/*
