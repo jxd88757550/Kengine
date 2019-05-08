@@ -26,8 +26,5 @@
     <ClCompile Include="src\KeyLog.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Main.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

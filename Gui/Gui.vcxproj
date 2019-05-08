@@ -58,36 +58,73 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include;$(SolutionDir)Kengine\include;C:\Qt\5.12.3\msvc2017_64\include;C:\Qt\5.12.3\msvc2017_64\include\QtCore;C:\Qt\5.12.3\msvc2017_64\include\QtGui;C:\Qt\5.12.3\msvc2017_64\include\QtWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Kengine\bin\Debug;C:\Qt\5.12.3\msvc2017_64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>IF EXIST C:\Qt\5.12.3\msvc2017_64\bin\Qt5Cored.dll\ (xcopy /Q /E /Y /I C:\Qt\5.12.3\msvc2017_64\bin\Qt5Cored.dll bin\Debug &gt; nul) ELSE (xcopy /Q /Y /I C:\Qt\5.12.3\msvc2017_64\bin\Qt5Cored.dll bin\Debug &gt; nul)
+IF EXIST C:\Qt\5.12.3\msvc2017_64\bin\Qt5Guid.dll\ (xcopy /Q /E /Y /I C:\Qt\5.12.3\msvc2017_64\bin\Qt5Guid.dll bin\Debug &gt; nul) ELSE (xcopy /Q /Y /I C:\Qt\5.12.3\msvc2017_64\bin\Qt5Guid.dll bin\Debug &gt; nul)
+IF EXIST C:\Qt\5.12.3\msvc2017_64\bin\Qt5Widgetsd.dll\ (xcopy /Q /E /Y /I C:\Qt\5.12.3\msvc2017_64\bin\Qt5Widgetsd.dll bin\Debug &gt; nul) ELSE (xcopy /Q /Y /I C:\Qt\5.12.3\msvc2017_64\bin\Qt5Widgetsd.dll bin\Debug &gt; nul)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>RELEASE;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include;$(SolutionDir)Kengine\include;C:\Qt\5.12.3\msvc2017_64\include;C:\Qt\5.12.3\msvc2017_64\include\QtCore;C:\Qt\5.12.3\msvc2017_64\include\QtGui;C:\Qt\5.12.3\msvc2017_64\include\QtWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Kengine\bin\Release;C:\Qt\5.12.3\msvc2017_64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>IF EXIST C:\Qt\5.12.3\msvc2017_64\bin\Qt5Core.dll\ (xcopy /Q /E /Y /I C:\Qt\5.12.3\msvc2017_64\bin\Qt5Core.dll bin\Release &gt; nul) ELSE (xcopy /Q /Y /I C:\Qt\5.12.3\msvc2017_64\bin\Qt5Core.dll bin\Release &gt; nul)
+IF EXIST C:\Qt\5.12.3\msvc2017_64\bin\Qt5Gui.dll\ (xcopy /Q /E /Y /I C:\Qt\5.12.3\msvc2017_64\bin\Qt5Gui.dll bin\Release &gt; nul) ELSE (xcopy /Q /Y /I C:\Qt\5.12.3\msvc2017_64\bin\Qt5Gui.dll bin\Release &gt; nul)
+IF EXIST C:\Qt\5.12.3\msvc2017_64\bin\Qt5Widgets.dll\ (xcopy /Q /E /Y /I C:\Qt\5.12.3\msvc2017_64\bin\Qt5Widgets.dll bin\Release &gt; nul) ELSE (xcopy /Q /Y /I C:\Qt\5.12.3\msvc2017_64\bin\Qt5Widgets.dll bin\Release &gt; nul)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\test.h" />
+    <ClInclude Include="include\ui_mainwindow.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="moc_mainwindow.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\mainwindow.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="include\mainwindow.h">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"C:/Qt/5.12.3/msvc2017_64/bin/moc" "include/mainwindow.h" -o "moc_mainwindow.cpp"  -DDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I"include" -I"$(SolutionDir)Kengine/include" -I"C:/Qt/5.12.3/msvc2017_64/include" -I"C:/Qt/5.12.3/msvc2017_64/include/QtCore" -I"C:/Qt/5.12.3/msvc2017_64/include/QtGui" -I"C:/Qt/5.12.3/msvc2017_64/include/QtWidgets"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"C:/Qt/5.12.3/msvc2017_64/bin/moc" "include/mainwindow.h" -o "moc_mainwindow.cpp"  -DRELEASE -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I"include" -I"$(SolutionDir)Kengine/include" -I"C:/Qt/5.12.3/msvc2017_64/include" -I"C:/Qt/5.12.3/msvc2017_64/include/QtCore" -I"C:/Qt/5.12.3/msvc2017_64/include/QtGui" -I"C:/Qt/5.12.3/msvc2017_64/include/QtWidgets"</Command>
+      <Outputs>moc_mainwindow.cpp</Outputs>
+      <Message>Moc'ing mainwindow.h</Message>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Kengine\Kengine.vcxproj">
+      <Project>{2641A984-9220-2820-9B38-B3F607978E81}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
