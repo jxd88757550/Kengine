@@ -4,6 +4,7 @@ require ("premake-qt/qt")
 local qt = premake.extensions.qt
 
 local qt_path = "C:/Qt/5.12.3/"
+--change local qt path
 local compilerversion = "msvc2017_64"
 --set this to the folder name that contains the include and lib folders in the qt directory
 

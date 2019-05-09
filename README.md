@@ -20,3 +20,5 @@ and update the code with this
 #endif
 #endif
 
+Before running the premake file, you need to change few paths inside so generating project files
+happens properly.
