@@ -1,5 +1,5 @@
 --premake5 script
-require ("qt/qt")
+require ("premake-qt/qt")
 
 local qt = premake.extensions.qt
 
