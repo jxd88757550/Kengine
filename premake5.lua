@@ -3,6 +3,7 @@ require ("premake-qt/qt")
 
 local qt = premake.extensions.qt
 
+local qt_path = "C:/Qt/5.12.3/"
 local compilerversion = "msvc2017_64"
 --set this to the folder name that contains the include and lib folders in the qt directory
 
@@ -60,17 +61,17 @@ project ("Gui")
 			"%{prj.name}/**.ui", "%{prj.name}/**.qrc"}
 
    qt.enable()
-   qtpath ("C:/Qt/5.12.3/" .. compilerversion)
+   
+   qtpath (qt_path .. compilerversion)
    qtmodules { "core", "gui", "widgets" }
    qtprefix ("Qt5")
    qtgenerateddir("Gui/")
 
    links{"Kengine"}
    
-   local cmd = "{COPY} C:/Qt/5.12.3/" .. compilerversion .. "/bin/"
+   local cmd = "{COPY} " .. qtpath .. compilerversion .. "/bin/"
    
    filter("configurations:Debug")   
-	
 	  postbuildcommands{ 
 		(cmd .. "Qt5Cored.dll" .. " bin/%{cfg.buildcfg}"),
 		(cmd .. "Qt5Guid.dll" .. " bin/%{cfg.buildcfg}"),
