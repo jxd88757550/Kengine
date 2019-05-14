@@ -1,15 +1,14 @@
 #include <fstream>
+#include <map>
 
 #include "KeyLog.h"
-#include <map>
 #pragma once
 
 class MacroFile;
-extern MacroFile File;
 
 class MacroFile {
 private:
 
 public:
-	void saveMacroCalls(const std::string& path);
+	static void saveMacroCalls(const std::string& path);
 };

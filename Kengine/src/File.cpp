@@ -110,17 +110,21 @@ const std::map<WORD, std::string> keystr_mapping = {
 
 void MacroFile::saveMacroCalls(const std::string & path)
 {
-	std::vector<INPUT>& vec = Logger.getKeyFrames();
+	std::vector<INPUT>& vec = KeyLogger::getKeyFrames();
 
 	std::ofstream data;
-	std::cout << path;
 	data.open(path);
 
-	if (!data.is_open()) {
-		std::cout << "Failed file\n";
+	if (!data.is_open())
+	{
+		std::cout << "File not saved successfully\n";
 		return;
 	}
-
+	else
+	{
+		std::cout << "File saved successfully\n";
+	}
+		
 	data << "void run() {\n";
 
 	for (size_t i = 0; i < vec.size(); ++i) {
@@ -129,8 +133,8 @@ void MacroFile::saveMacroCalls(const std::string & path)
 			if (vec[i].mi.time != 0)
 			data << "Sleep(" << vec[i].mi.time << ");\n";
 			data << "Sender.mouseEvent(MouseCoord(MOUSE_ABSOLUTE, " << 
-				vec[i].mi.dx / (0xFFFF / GetSystemMetrics(SM_CXSCREEN)) << ", " << 
-				vec[i].mi.dy / (0xFFFF / GetSystemMetrics(SM_CYSCREEN)) << "), ";
+				vec[i].mi.dx / (0xFFFF / SCREENSIZE_X) << ", " << 
+				vec[i].mi.dy / (0xFFFF / SCREENSIZE_Y) << "), ";
 
 			DWORD flags = vec[i].mi.dwFlags;
 			flags &= ~(MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE);

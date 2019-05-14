@@ -2,11 +2,17 @@
 
 HHOOK keyboardHook;
 HHOOK mouseHook;
-KeyLogger Logger;
-EventSender Sender;
 DWORD initTime;
 
+//STATIC VARIABLE DECL
 DWORD firstTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
+//STATIC ARRAY DECL
+std::array<std::string, 255> KeyLogger::codes = {
+#include "VKCodes.h"
+};
+
+std::vector<INPUT> KeyLogger::keyframes;
 
 VOID EventSender::keyEvent(WORD vkCode, bool isUp) {
 	INPUT ki;
@@ -31,30 +37,30 @@ VOID EventSender::mouseEvent(const MouseCoord& coords, enum MouseEvent e)
 	mi.type = INPUT_MOUSE;
 	mi.mi.dwFlags |= MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_ABSOLUTE;
 
-	if (coords.type == MOUSE_ABSOLUTE)
+	if (coords.type == MouseCoord::MOUSE_ABSOLUTE)
 	{
-		mi.mi.dx = coords.x * (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
-		mi.mi.dy = coords.y * (0xFFFF / GetSystemMetrics(SM_CYSCREEN));
-	}else if (coords.type == MOUSE_RELATIVE)
+		mi.mi.dx = coords.x * (0xFFFF / SCREENSIZE_X);
+		mi.mi.dy = coords.y * (0xFFFF / SCREENSIZE_Y);
+	}else if (coords.type == MouseCoord::MOUSE_RELATIVE)
 	{
 		POINT p;
 		GetCursorPos(&p);
 
-		mi.mi.dx = (p.x + coords.x) * (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
-		mi.mi.dy = (p.y + coords.y) * (0xFFFF / GetSystemMetrics(SM_CYSCREEN));
+		mi.mi.dx = (p.x + coords.x) * (0xFFFF / SCREENSIZE_X);
+		mi.mi.dy = (p.y + coords.y) * (0xFFFF / SCREENSIZE_Y);
 	}
-	else if (coords.type == MOUSE_OFFSET)
+	else if (coords.type == MouseCoord::MOUSE_OFFSET)
 	{
 		//LPRECT rect;
 		//ZeroMemory(&rect, sizeof(rect));
 		//
 		//BOOL windowrect = GetWindowRect(GetForegroundWindow(), rect);
 		//
-		//mi.mi.dx = (rect->top + coords.x) * (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
-		//mi.mi.dy = (rect->left + coords.y) * (0xFFFF / GetSystemMetrics(SM_CYSCREEN)));
+		//mi.mi.dx = (rect->top + coords.x) * (0xFFFF /  SCREENSIZE_X);
+		//mi.mi.dy = (rect->left + coords.y) * (0xFFFF / SCREENSIZE_Y);
 	}
 
-	if (coords.type != MOUSE_IGNORE) {
+	if (coords.type != MouseCoord::MOUSE_IGNORE) {
 		mi.mi.dwFlags |= MOUSEEVENTF_MOVE;
 	}
 
@@ -103,7 +109,7 @@ VOID EventSender::mouseEvent(const MouseCoord& coords, enum MouseEvent e)
 VOID EventSender::sendKeys()
 {
 	std::cout << "Playing keys...\n";
-	std::vector<INPUT>& vec = Logger.getKeyFrames();
+	std::vector<INPUT>& vec = KeyLogger::getKeyFrames();
 
 	for (size_t i = 0; i < vec.size(); ++i) {
 		DWORD time = 0;
@@ -149,7 +155,7 @@ std::vector<INPUT>& KeyLogger::getKeyFrames()
 }
 
 #ifdef DEBUG
-VOID KeyLogger::printFrames() const{
+VOID KeyLogger::printFrames(){
 	std::cout << "Printing info...\n";
 	for (size_t i = 0; i < keyframes.size(); ++i) {
 		if (keyframes[i].type == INPUT_MOUSE) {
@@ -195,12 +201,12 @@ VOID KeyLogger::printFrames() const{
 				printf_s("XBUTTON UP\n");
 				break;
 			}
-			std::cout << "Y: " << keyframes[i].mi.dy / (0xFFFF / GetSystemMetrics(SM_CXSCREEN)) << '\n';
-			std::cout << "X: " << keyframes[i].mi.dx / (0xFFFF / GetSystemMetrics(SM_CYSCREEN)) << '\n';
+			std::cout << "X: " << keyframes[i].mi.dx / (0xFFFF / SCREENSIZE_X) << '\n';
+			std::cout << "Y: " << keyframes[i].mi.dy / (0xFFFF / SCREENSIZE_Y) << '\n';
 		}
 		else if (keyframes[i].type == INPUT_KEYBOARD) {
 			std::cout << "Delay: " << keyframes[i].ki.time << '\n';
-			std::cout << Logger.codes.at(keyframes[i].ki.wVk) << " " << (keyframes[i].ki.dwFlags== KEYEVENTF_KEYUP ? "KEYUP" : "KEYDOWN") << "\n\n";
+			std::cout << KeyLogger::codes.at(keyframes[i].ki.wVk) << " " << (keyframes[i].ki.dwFlags== KEYEVENTF_KEYUP ? "KEYUP" : "KEYDOWN") << "\n\n";
 		}
 	}
 }
@@ -212,20 +218,19 @@ LRESULT CALLBACK mouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 		MSLLHOOKSTRUCT * mouse = (MSLLHOOKSTRUCT *)lParam;
 		//mouse event
 
-		std::vector<INPUT>& vec = Logger.getKeyFrames();
+		std::vector<INPUT>& vec = KeyLogger::getKeyFrames();
 
 		if (vec.size() == 0)
 		{
 			firstTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - firstTime;
-			std::cout<<"FirstTime: " << firstTime << std::endl;
 		}
 		INPUT ip;
 		ZeroMemory(&ip, sizeof(ip));
 
 		ip.type = INPUT_MOUSE;
-
-		ip.mi.dx = mouse->pt.x * (0xFFFF / GetSystemMetrics(SM_CXSCREEN));
-		ip.mi.dy = mouse->pt.y * (0xFFFF / GetSystemMetrics(SM_CYSCREEN));
+		
+		ip.mi.dx = mouse->pt.x * (0xFFFF / SCREENSIZE_X);
+		ip.mi.dy = mouse->pt.y * (0xFFFF / SCREENSIZE_Y);
 		
 		ip.mi.time = mouse->time - initTime;
 		initTime = mouse->time;
@@ -287,7 +292,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		PKBDLLHOOKSTRUCT key = (PKBDLLHOOKSTRUCT)lParam;
 		//a key was pressed
 
-		std::vector<INPUT>& vec = Logger.getKeyFrames();
+		std::vector<INPUT>& vec = KeyLogger::getKeyFrames();
 
 		if (vec.size() == 0)
 		{
@@ -298,14 +303,12 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 		ip.type = INPUT_KEYBOARD;
 		ip.ki.time = key->time - initTime;
 		initTime = key->time;
-		ip.ki.dwExtraInfo = 0;
-		ip.ki.wScan = 0;
+
 		ip.ki.wVk = key->vkCode;
 #ifdef DEBUG
-		std::cout << Logger.codes.at(ip.ki.wVk) << std::endl;
-		std::cout << "0x" <<std::hex << ip.ki.wVk << std::endl;
+		std::cout << KeyLogger::codes.at(ip.ki.wVk) << std::endl;
+		std::cout << "0x" << std::hex << ip.ki.wVk << std::endl;
 #endif
-		ip.ki.dwFlags = 0x0000;
 
 		if (key->flags & 0x1)
 			ip.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
